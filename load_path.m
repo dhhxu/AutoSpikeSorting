@@ -1,7 +1,7 @@
 function [ status ] = load_path()
 % LOAD_PATH Loads necessary scripts for spike sorting into path.
 %
-% load_path()
+% LOAD_PATH()
 %
 % Loads Matlab scripts used for spike sorting. The current scripts being loaded
 % into the path are:
@@ -16,17 +16,19 @@ function [ status ] = load_path()
 % NONE
 %
 % Output:
-% "status": 0 = no issues, 1 = problem.
+% STATUS    Return code. Possible values:
+%               0 = success
+%               1 = problem
 
-    status = 1;
-    
-    try
-        addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\Superspiketrain'));
-        addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\spiketrain'));
-        addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\Daniel X\wave_clus_2.0wb'));
-    catch
-        warning('Path load failed.');
-        return;
-    end
-    
-    status = 0;
+status = 1;
+
+try
+    addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\Superspiketrain'));
+    addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\spiketrain'));
+    addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\Daniel X\wave_clus_2.0wb'));
+catch
+    warning('Path load failed.');
+    return;
+end
+
+status = 0;
