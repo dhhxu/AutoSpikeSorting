@@ -21,6 +21,8 @@ function [aligned] = align_spikes(spikes, shift, thr, interp, factor)
 %
 % OUTPUT:
 % ALIGNED   Matrix with same dimensions as SPIKES, with aligned waveforms.
+%
+% Source: Quiroga 2004
 
 if shift <= 0
     error('Shift cannot be negative');
