@@ -33,9 +33,11 @@ function plain_pca
 % project, which should contain all the files you will be working with,
 % including data files. Also fill in your TANK name and BLOCK number here.
 
-ROOT = 'FILL';
-TANK = 'FILL';
-BLOCK = 'FILL';
+ROOT = fullfile('U:', 'DanielX');
+TANK = 'AOS002';
+BLOCK = 1;
+
+addpath(genpath(ROOT));
 
 if load_path()
     error('Failed to load paths');

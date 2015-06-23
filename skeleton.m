@@ -37,6 +37,8 @@ ROOT = 'FILL';
 TANK = 'FILL';
 BLOCK = 'FILL';
 
+addpath(genpath(ROOT));
+
 if load_path()
     error('Failed to load paths');
 end
