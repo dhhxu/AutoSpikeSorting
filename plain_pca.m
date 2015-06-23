@@ -26,7 +26,7 @@
 % functions for each step and fits the 'plug and play' intentions of this
 % skeleton.
 
-function skeleton
+function plain_pca
 
 %% Step 0: Load paths and data
 % Loads path, requisite for external scripts. Provide the ROOT directory of the
