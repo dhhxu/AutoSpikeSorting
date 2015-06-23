@@ -4,7 +4,8 @@ function [idx, amp] = quiroga_threshold(data)
 % QUIROGA_THRESHOLD(data)
 %
 % This function uses Quiroga's method for automatically determining the
-% threshold for spikes. The formula is as follows:
+% threshold for spikes based on median estimate of background noise. 
+% The formula is as follows:
 %
 % Thr = 4 * median( |x| / 0.6745 )
 %
