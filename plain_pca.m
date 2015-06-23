@@ -46,7 +46,6 @@ end
 [status, data] = load_simple(TANK, BLOCK, ROOT);
 
 if status
-    clear status
     error('Error in load_simple. Check warning messages.');
 end
 clear status
@@ -116,6 +115,7 @@ FS = strm_data.fs;
 
 % FILL
 % features = FUNCTION(spike_matrix, ...);
+
 
 %% Step 5: Clustering
 % You should implement your clustering algorithm as a function for ease of
