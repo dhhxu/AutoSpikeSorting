@@ -10,11 +10,13 @@
 % The data is assumed to be from TDT, and the 'Load' section makes this
 % assumption.
 %
-% In spike sorting, we cluster spikes belonging to a particular channel. In
-% principle, the skeleton could loop over all channels in all blocks for a
-% given tank. As this may not be very fast, the skeleton is currently limited to
-% clustering spikes on a single channel basis. However, it can be extended to
-% handle other channels/blocks if so desired.
+% In spike sorting, we cluster spikes belonging to a particular channel within
+% a single tank. In principle, the skeleton could loop over all channels in all
+% blocks for a given tank. As this may not be very fast, the skeleton is
+% currently limited to clustering spikes on a single channel basis. However, it
+% can be extended to handle other channels/blocks if so desired.
+%
+% In other words, run this script for a single tank, block, and channel.
 %
 % Note that the given steps are merely guidelines. Depending on the procedure,
 % some steps may be unused or be invoked in a different order. Furthermore, the
@@ -26,34 +28,22 @@
 % functions for each step and fits the 'plug and play' intentions of this
 % skeleton.
 
-function plain_pca
+% function plain_pca
 
 %% Step 0: Load paths and data
-% Loads path, requisite for external scripts. Provide the ROOT directory of the
-% project, which should contain all the files you will be working with,
-% including data files. Also fill in your TANK name and BLOCK number here.
+% Loads path, requisite for accessing external scripts and data.
 
-ROOT = fullfile('U:', 'DanielX');
+ROOT = pwd;
 TANK = 'AOS002';
 BLOCK = 1;
+CHANNEL = 1;
 
-addpath(genpath(ROOT));
+load_path(ROOT);
 
-if load_path()
-    error('Failed to load paths');
-end
+data = load_simple(TANK, BLOCK, ROOT);
 
-[status, data] = load_simple(TANK, BLOCK, ROOT);
-
-if status
-    error('Error in load_simple. Check warning messages.');
-end
-clear status
-
-strm_data = data.streams.STRM;
-snip_data = data.snips.CSPK;
-
-FS = strm_data.fs;
+strm_struct = data.streams.STRM;
+snip_struct = data.snips.CSPK;
 
 
 %% Step 1: Filtering and preprocessing
@@ -69,6 +59,19 @@ FS = strm_data.fs;
 
 % FILL
 % processed_data = FUNCTION(data, ...);
+
+chan = 1;
+
+strm_data = strm_struct.data(1, :);
+
+figure;
+plot(strm_data);
+
+
+strm_neo = neo_apply(strm_data, 1:length(strm_data));
+
+figure;
+plot(strm_neo);
 
 %% Step 2: Spike detection
 % You should implement your detection method as a function for ease of usage in
