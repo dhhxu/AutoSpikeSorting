@@ -1,7 +1,7 @@
 function [spikes] = get_spikes_custom(data, idx, pre, post)
 % GET_SPIKES_CUSTOM Recovers spikes from detected occurrences.
 %
-% spikes = GET_SPIKES_CUSTOM(data, idx, pre, post)
+% SPIKES = GET_SPIKES_CUSTOM(DATA, IDX, PRE, POST)
 %
 % Given a vector IDX of indices in vector DATA where spikes were detected,
 % extract a window of PRE samples before the occurrence and POST samples after

@@ -15,14 +15,14 @@ function [strm, snip] = load_simple(tank, block, root)
 %    |__ ROOT/
 %
 % If this is the first time TANK is loaded in this manner, this function 
-% saves the data struct to TANK-Block-{BLOCK}.mat, which is at the same level
+% saves the data struct to TANK-Block-BLOCK.mat, which is at the same level
 % as TANK and ROOT. So, after this function is invoked, the file system will
 % look like:
 %
 %   ..
 %    |__ TANK/
 %    |__ ROOT/
-%    |__ TANK-Block-{BLOCK}.mat
+%    |__ TANK-Block-BLOCK.mat
 %
 % INPUT:
 % TANK      String of the tank name. Should be an existing directory
@@ -57,6 +57,9 @@ end
 
 function [data] = load_block(tank, tank_path, block, parent)
 % Helper function. Returns the data struct from TDT2mat call to TANK and BLOCK.
+% If the BLOCK has been loaded before by a previous call to load_simple, it
+% should have been saved to a file. In this case, this function simply loads
+% that saved file into the workspace.
 
     mat_name = sprintf('%s-Block-%d.mat', tank, block);
     mat_path = fullfile(parent, mat_name);
