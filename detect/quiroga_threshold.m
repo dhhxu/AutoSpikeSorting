@@ -1,31 +1,23 @@
-function [idx, amp] = quiroga_threshold(data)
+function [idx] = quiroga_threshold(data)
 % QUIROGA_THRESHOLD Amplitude threshold spikes using method in Quiroga 2004
 %
-% QUIROGA_THRESHOLD(data)
+% IDX = QUIROGA_THRESHOLD(DATA)
 %
-% This function uses Quiroga's method for automatically determining the
-% threshold for spikes based on median estimate of background noise. 
-% The formula is as follows:
+% Detects spikes in DATA vector according to positive amplitude thresholding.
+% The threshold is determined by Quiroga's method of using the median as an
+% estimator of background noise. The formula is as found below:
 %
 % Thr = 4 * median( |x| / 0.6745 )
 %
 % where x is the neural signal with background noise.
 % 
 % INPUT:
-% data: 1xN numerical vector of raw data.
+% DATA  1xN numerical vector of raw data
 %
 % OUTPUT:
-% idx: indices of detected spikes within DATA.
-% amp: amplitude of detected spikes.
+% IDX   indices of detected spikes within DATA
 
-idx = [];
-amp = [];
+    threshold = 4 * median(abs(data) / 0.6745);
+    idx = threshold_simple(data, threshold);
 
-threshold = 4 * median(abs(data) / 0.6745);
-
-for i = 1:length(data)
-    if data(i) > threshold
-        idx = [idx i];          %#ok<AGROW>
-        amp = [amp data(i)];    %#ok<AGROW>
-    end
 end

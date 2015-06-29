@@ -59,7 +59,7 @@ load_path(ROOT);
 
 chan = 1;
 
-strm_data = strm_struct.data(1, :);
+strm_data = strm_struct.data(chan, :);
 
 figure;
 plot(strm_data);

@@ -1,7 +1,7 @@
-function [idx] = spike_detect(data, thr)
-% SPIKE_DETECT Detect spikes via amplitude thresholding
+function [idx] = threshold_simple(data, thr)
+% THRESHOLD_SIMPLE Detect spikes via amplitude thresholding
 %
-% IDX = spike_detect(DATA, THR)
+% IDX = THRESHOLD_SIMPLE(DATA, THR)
 %
 % This function detects and locates the time points of spikes in DATA with
 % amplitude exceeding THR. Specifically, only considers positive spikes.
@@ -25,5 +25,4 @@ function [idx] = spike_detect(data, thr)
             idx = [idx i];          %#ok<AGROW>
         end
     end
-
 end
