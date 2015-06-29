@@ -1,7 +1,7 @@
 function [idx] = tdt_detect(channel, strm_struct, snip_struct)
 % TDT_DETECT Locates indices of spikes in stream data from snippet data.
 %
-% idx = TDT_DETECT(STRM_STRUCT, SNIP_STRUCT)
+% IDX = TDT_DETECT(STRM_STRUCT, SNIP_STRUCT)
 %
 % Given timestamps in SNIP_STRUCT for a given channel CHANNEL, locate the
 % corresponding indices in the stream data located in STRM_STRUCT.
@@ -27,4 +27,3 @@ function [idx] = tdt_detect(channel, strm_struct, snip_struct)
     idx = floor(ts * strm_struct.fs);
 
 end
-
