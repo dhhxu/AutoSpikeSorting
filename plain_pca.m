@@ -42,7 +42,6 @@ load_path(ROOT);
 
 [strm_struct, snip_struct] = load_simple(TANK, BLOCK, ROOT);
 
-
 %% Step 1: Filtering and preprocessing
 % You should implement your filter and/or preprocessing methods as functions for
 % ease of usage in this skeleton.
@@ -54,21 +53,7 @@ load_path(ROOT);
 % specific to the function used. PROCESSED_DATA generally should be a one
 % dimensional vector of the processed raw data.
 
-% FILL
-% processed_data = FUNCTION(data, ...);
-
-chan = 1;
-
-strm_data = strm_struct.data(chan, :);
-
-figure;
-plot(strm_data);
-
-
-strm_neo = neo_apply(strm_data, 1:length(strm_data));
-
-figure;
-plot(strm_neo);
+strm_data = strm_struct.data(CHANNEL, :);
 
 %% Step 2: Spike detection
 % You should implement your detection method as a function for ease of usage in
@@ -81,9 +66,7 @@ plot(strm_neo);
 % additional arguments specific to the function used. SPIKE_INDICES generally
 % should be a one dimensional vector of indices of detected spike occurrences.
 
-% FILL
-% spike_indices = FUNCTION(processed_data, ...);
-
+idx = tdt_detect(CHANNEL, strm_struct, snip_struct);
 
 %% Step 3: Spike recovery
 % You should implement your recovery method as a function for ease of usage in
@@ -97,8 +80,7 @@ plot(strm_neo);
 % used. SPIKE_MATRIX is generally a MxN matrix where M is the number of
 % recovered spike waveforms and N is the number of samples in a waveform.
 
-% FILL
-% spike_matrix = FUNCTION(spike_indices, ...);
+spike_matrix = get_spikes(strm_data, idx, 32);
 
 
 %% Step 4: Feature Extraction
@@ -113,8 +95,9 @@ plot(strm_neo);
 % the format of the FEATURES output is up to you to define, as there are many
 % ways to represent spike features.
 
-% FILL
-% features = FUNCTION(spike_matrix, ...);
+spike_matrix = align_custom(spike_matrix, 10, 'min', 16, 16);
+
+[C, S, L, T, E, M] = pca(spike_matrix);
 
 
 %% Step 5: Clustering
@@ -133,13 +116,17 @@ plot(strm_neo);
 % clustering function so that CLASSIFICATION format will be consistent across
 % different clustering functions.
 
-% FILL
-% classification = FUNCTION(features, ...);
 
 
-%% Step 6: Additional Processing (if necessary)
+%% Step 6: Evaluation
+% Put code for evaluating the quality of the clustering step.
 
 
-%% Step 7: Visualization (optional)
+%% Step 7: Additional Processing (if necessary)
 
-opengl software
+
+%% Step 8: Visualization (optional)
+% Please add the line 'opengl software' to your visualization scripts.
+
+plotPca3d(S);
+
