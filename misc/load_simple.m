@@ -1,7 +1,7 @@
-function [data] = load_simple(tank, block, root)
+function [strm, snip] = load_simple(tank, block, root)
 % LOAD_SIMPLE Load block data into workspace.
 %
-% LOAD_SIMPLE(TANK, BLOCK, ROOT)
+% [STRM, SNIP] = LOAD_SIMPLE(TANK, BLOCK, ROOT)
 %
 % Load the data struct (see TDT documentation for struct details) located in
 % tank named TANK, block number BLOCK. The tank directory is at the same level
@@ -30,7 +30,9 @@ function [data] = load_simple(tank, block, root)
 % ROOT      String of the path of the project files
 %
 % OUTPUT:
-% DATA      A struct representing the block data. See TDT2mat.m for more details
+% STRM      Struct containing raw stream data
+% SNIP      Struct containing snippet data with timestamps of user-identified
+%           spike waveforms
 
     if block <= 0 || isempty(tank) || isempty(root)
         error('Invalid block: %d', block);
@@ -48,9 +50,14 @@ function [data] = load_simple(tank, block, root)
     end
 
     data = load_block(tank, tank_path, block, parent);
+    
+    strm = data.streams.STRM;
+    snip = data.snips.CSPK;
 end
 
 function [data] = load_block(tank, tank_path, block, parent)
+% Helper function. Returns the data struct from TDT2mat call to TANK and BLOCK.
+
     mat_name = sprintf('%s-Block-%d.mat', tank, block);
     mat_path = fullfile(parent, mat_name);
 

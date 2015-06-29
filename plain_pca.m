@@ -40,10 +40,7 @@ CHANNEL = 1;
 
 load_path(ROOT);
 
-data = load_simple(TANK, BLOCK, ROOT);
-
-strm_struct = data.streams.STRM;
-snip_struct = data.snips.CSPK;
+[strm_struct, snip_struct] = load_simple(TANK, BLOCK, ROOT);
 
 
 %% Step 1: Filtering and preprocessing
