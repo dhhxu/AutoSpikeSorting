@@ -1,7 +1,7 @@
 function [] = plot_spikes(spikes)
 % PLOT_SPIKES Plots spikes on top of each other in the same plot.
 %
-% PLOT_SPIKES(spikes)
+% PLOT_SPIKES(SPIKES)
 %
 % Plots the spikes in the SPIKES matrix on the same plot. This is to help
 % visualize the waveform shapes.
@@ -12,11 +12,13 @@ function [] = plot_spikes(spikes)
 % OUTPUT:
 % NONE
 
-opengl software;
+    opengl software;
 
-figure('Name', 'Spikes');
-hold on;
-for i = 1:length(spikes)
-    plot(spikes(i, :), 'b');
+    figure('Name', 'Spikes');
+    hold on;
+    for i = 1:length(spikes)
+        plot(spikes(i, :), 'b');
+    end
+    hold off;
+    
 end
-hold off;
