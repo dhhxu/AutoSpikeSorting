@@ -1,7 +1,7 @@
 function [] = plotPca3d(score)
-% PLOTPCA3D Scatter plot the first two principal components
+% PLOTPCA3D Scatter plot the first three principal components
 %
-% PLOTPCA3D(score)
+% PLOTPCA3D(SCORE)
 %
 % Given the PCA score matrix SCORE, scatter plot the first three principal
 % components.

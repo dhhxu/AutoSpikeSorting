@@ -1,7 +1,7 @@
 function [] = plotPca2d(score)
 % PLOTPCA2D Scatter plot the first two principal components
 %
-% PLOTPCA2D(score)
+% PLOTPCA2D(SCORE)
 %
 % Given the PCA score matrix SCORE, scatter plot the first two principal
 % components.
