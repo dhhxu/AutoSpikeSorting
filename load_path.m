@@ -5,11 +5,10 @@ function [] = load_path(root)
 %
 % Add the project script files located in parent directory ROOT to the MATLAB
 % path. Generally ROOT is the output of the `pwd` function. Also loads external
-% MATLAB scripts by TDT. If a load fails, terminates with an error.
+% scripts located in the 'code' directory, which is at the same level as ROOT.
 %
 % Current external scripts:
-%   Superspiketrain
-%   spiketrain
+%   ../code/*
 %
 % INPUT:
 % ROOT      String of the project root directory
@@ -19,8 +18,12 @@ function [] = load_path(root)
 
     try
         addpath(genpath(root));
-        addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\Superspiketrain'));
-        addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\spiketrain'));
+%         addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\Superspiketrain'));
+%         addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\spiketrain'));
+
+        % Currently only use TDT2mat.m as an external script.
+        codePath = fullfile(fileparts(root), 'code');
+        addpath(genpath(codePath));
     catch
         error('Path load failed.');
     end
