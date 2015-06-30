@@ -30,16 +30,27 @@
 
 % function plain_pca
 
-%% Step 0: Load paths and data
-% Loads path, requisite for accessing external scripts and data.
+%% Constants
+% Put your constants here for convenience.
 
 ROOT = pwd;
 TANK = 'AOS002';
 BLOCK = 1;
 CHANNEL = 1;
 
-load_path(ROOT);
+LOW = 300;
+HIGH = 3000;
 
+WINDOW = 32;
+
+MAX_SHIFT = 10;
+
+CLUSTERS = 2;
+
+%% Step 0: Load paths and data
+% Loads path, requisite for accessing external scripts and data.
+
+load_path(ROOT);
 [strm_struct, snip_struct] = load_simple(TANK, BLOCK, ROOT);
 
 %% Step 1: Filtering and preprocessing
@@ -54,6 +65,7 @@ load_path(ROOT);
 % dimensional vector of the processed raw data.
 
 strm_data = strm_struct.data(CHANNEL, :);
+strm_data = bpf(strm_data, LOW, HIGH, strm_struct.fs);
 
 %% Step 2: Spike detection
 % You should implement your detection method as a function for ease of usage in
@@ -80,8 +92,9 @@ idx = tdt_detect(CHANNEL, strm_struct, snip_struct);
 % used. SPIKE_MATRIX is generally a MxN matrix where M is the number of
 % recovered spike waveforms and N is the number of samples in a waveform.
 
-spike_matrix = get_spikes(strm_data, idx, 32);
-
+spike_matrix = get_spikes(strm_data, idx, WINDOW);
+spike_matrix = align_custom(spike_matrix, MAX_SHIFT, 'min', WINDOW / 2, ...
+                            WINDOW / 2);
 
 %% Step 4: Feature Extraction
 % You should implement your feature extraction method as a function for ease of
@@ -95,9 +108,7 @@ spike_matrix = get_spikes(strm_data, idx, 32);
 % the format of the FEATURES output is up to you to define, as there are many
 % ways to represent spike features.
 
-spike_matrix = align_custom(spike_matrix, 10, 'min', 16, 16);
-
-[C, S, L, T, E, M] = pca(spike_matrix);
+features = pca_coeff(.8, size(spike_matrix, 2), spike_matrix);
 
 
 %% Step 5: Clustering
@@ -116,7 +127,7 @@ spike_matrix = align_custom(spike_matrix, 10, 'min', 16, 16);
 % clustering function so that CLASSIFICATION format will be consistent across
 % different clustering functions.
 
-
+class = kmeans(features, CLUSTERS);
 
 %% Step 6: Evaluation
 % Put code for evaluating the quality of the clustering step.
@@ -128,5 +139,4 @@ spike_matrix = align_custom(spike_matrix, 10, 'min', 16, 16);
 %% Step 8: Visualization (optional)
 % Please add the line 'opengl software' to your visualization scripts.
 
-plotPca3d(S);
-
+plotPca3d(features);
