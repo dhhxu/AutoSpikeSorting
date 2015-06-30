@@ -1,38 +1,23 @@
-function [nCoeff] = pca_coeff(latent, totalVariance, maxCoeff)
-% PCA_COEFF Determine the number of principal coefficients to reach a target variance
+function [coefficients] = pca_coeff(spike_matrix, cutoff, max_coeff)
+% PCA_COEFF Returns a subset of the score matrix to be used as features
 %
-% NCOEFF = PCA_COEFF(LATENT, TOTALVARIANCE, MAXCOEFF)
+% COEFFICIENTS = PCA_COEFF(SPIKE_MATRIX, CUTOFF, MAX_COEFF)
 %
-% Returns the number of principal coefficients that account for at least
-% TOTALVARIANCE variance. Uses LATENT as part of the calculations. MAXCOEFF is
-% the upper bound on the number of coefficients returned by this function.
+% Run PCA on the data matrix SPIKE_MATRIX and return the principal component
+% score coefficients for use in later clustering algorithms. The coefficients
+% returned must comprise at least CUTOFF variance of the data. The number of
+% coefficients actually returned will be at most MAX_COEFF.
 %
 % INPUT:
-% LATENT            Nx1 numeric vector of principal coefficient variances
-% TOTALVARIANCE     Target variance desired. Should be a double between 0 and 1
-% MAXCOEFF          Integer of maximum number of coefficients desired
+% SPIKE_MATRIX  MxN numeric matrix with M spike waveforms of length N
+% CUTOFF        Postive number between 0 and 1 for the desired variance
+% MAX_COEFF     Positive integer of maximum number of score coefficients desired
 %
 % OUTPUT:
-% NCOEFF            Positive integer of number of principal coefficients that
-%                   account for at least TOTALVARIANCE variance
+% COEFFICIENTS  MxC matrix, where each row is the representation of the waveform
+%               in PCA space. C is at most MAX_COEFF.
 
-    if isempty(latent)
-        error('Empty principal coefficient variance vector');
-    elseif totalVariance > 1 || totalVariance < 0
-        error('Invalid desired variance: %2.2f', totalVariance);
-    elseif maxCoeff < 1
-        error('Invalid coefficient count cutoff: %d', maxCoeff);
-    end
-    
-    nCoeff = maxCoeff;
-
-    cumulative = cumsum(latent) ./ sum(latent);
-    for i = 1:length(cumulative)
-        if cumulative(i) >= totalVariance
-            if i < maxCoeff
-                nCoeff = i;
-            end
-            return
-        end
-    end
+    pca_info = pca_apply(spike_matrix);
+    nCoeff = pca_limit(pca_info.latent, cutoff, max_coeff);
+    coefficients = pca_info.score(:, 1:nCoeff);
 end
