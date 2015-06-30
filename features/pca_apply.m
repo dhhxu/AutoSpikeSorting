@@ -1,12 +1,11 @@
-function [pca_info] = pca_apply(spike_matrix)
+function [pca_info] = pca_apply(varargin)
 % PCA_APPLY Wrapper for pca() to return results in struct form.
 %
-% PCA_INFO = PCA_APPLY(SPIKE_MATRIX)
+% PCA_INFO = PCA_APPLY(VARARGIN)
 %
-% Convenience function with the same behavior as pca(SPIKE_MATRIX). SPIKE_MATRIX
-% is a MxN matrix with M spike waveforms spanning N samples. Returns the
-% complete results of pca() in a struct. See pca() for more information on the
-% struct fields.
+% Convenience function with the same behavior as pca(). This is identical to the
+% pca() function except it returns a struct instead of a vector. This is to keep
+% the workspace clean.
 %
 % INPUT:
 % VARARGIN          See pca() for input information
@@ -16,7 +15,7 @@ function [pca_info] = pca_apply(spike_matrix)
 %                   See pca() for information on the fields.
 
     pca_info = struct();
-    [C, S, L, T, E, M] = pca(spike_matrix);
+    [C, S, L, T, E, M] = pca(varargin{1:end});
     
     pca_info.coeff = C;
     pca_info.score = S;
