@@ -39,7 +39,7 @@ function [] = plotPca2d(score, varargin)
     
     opengl software;
     figure('Name', 'PCA 2D');
-    if isempty(varargin{1})
+    if isempty(varargin)
         scatter(pc1, pc2, 0.9);
     else
         gscatter(pc1, pc2, varargin{1});
