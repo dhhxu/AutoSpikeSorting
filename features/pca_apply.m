@@ -1,18 +1,18 @@
 function [pca_info] = pca_apply(varargin)
 % PCA_APPLY Wrapper for pca() to return results in struct form.
 %
-% PCA_INFO = PCA_APPLY(VARARGIN)
+% PCA_INFO = PCA_APPLY(...)
 %
 % Convenience function with the same behavior as pca(). This is identical to the
 % pca() function except it returns a struct instead of a vector. This is to keep
 % the workspace clean.
 %
 % INPUT:
-% VARARGIN          See pca() for input information
+% ...          See pca() for information on input arguments
 % 
 % OUTPUT:
-% PCA_INFO          Struct whose fields correspond to the output of pca()
-%                   See pca() for information on the fields.
+% PCA_INFO     Struct whose fields correspond to the output of pca().
+%              See pca() for information on the fields
 
     pca_info = struct();
     [C, S, L, T, E, M] = pca(varargin{1:end});
