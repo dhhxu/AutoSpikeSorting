@@ -23,32 +23,36 @@
 % comments in each step are suggested ways of implementing that particular step.
 % Please modify them to suit your particular needs.
 %
-% The ideal usage case would be a single function for all steps (excluding Steps
-% 0 and 7), as this implies consistency in the output format across different
-% functions for each step and fits the 'plug and play' intentions of this
-% skeleton.
+% The ideal usage case would be a single function for most steps, as this
+% implies consistency in the output format across different functions for each
+% step and fits the 'plug and play' intentions of this skeleton.
 
-% function plain_pca
+function plain_pca
 
 %% Constants
 % Put your constants here for convenience.
 
+% For initialization.
 ROOT = pwd;
 TANK = 'AOS002';
 BLOCK = 1;
 CHANNEL = 1;
 
-LOW = 300;
-HIGH = 3000;
+% For bandpass filtering
+FILTER_LOW = 300;
+FILTER_HIGH = 3000;
 
+% For recovery
 WINDOW = 32;
 
+% Alignment
 MAX_SHIFT = 10;
 
-CLUSTERS = 2;
+% For k-means clustering.
+NUM_CLUSTERS = 2;
 
-%% Step 0: Load paths and data
-% Loads path, requisite for accessing external scripts and data.
+%% Step 0: Initialization
+% Loads path, requisite for accessing external scripts, and data.
 
 load_path(ROOT);
 [strm_struct, snip_struct] = load_simple(TANK, BLOCK, ROOT);
@@ -65,7 +69,7 @@ load_path(ROOT);
 % dimensional vector of the processed raw data.
 
 strm_data = strm_struct.data(CHANNEL, :);
-strm_data = bpf(strm_data, LOW, HIGH, strm_struct.fs);
+strm_data = bpf(strm_data, FILTER_LOW, FILTER_HIGH, strm_struct.fs);
 
 %% Step 2: Spike detection
 % You should implement your detection method as a function for ease of usage in
@@ -127,16 +131,22 @@ features = pca_coeff(.8, size(spike_matrix, 2), spike_matrix);
 % clustering function so that CLASSIFICATION format will be consistent across
 % different clustering functions.
 
-class = kmeans(features, CLUSTERS);
+class = kmeans(features, NUM_CLUSTERS);
 
 %% Step 6: Evaluation
 % Put code for evaluating the quality of the clustering step.
 
+clusters = separate_clusters(spike_matrix, class);
+
+for i = 1:NUM_CLUSTERS
+    plot_spikes_with_mean(clusters{i}, 'r');
+end
 
 %% Step 7: Additional Processing (if necessary)
-
 
 %% Step 8: Visualization (optional)
 % Please add the line 'opengl software' to your visualization scripts.
 
-plotPca3d(features);
+plotPca2d(features, class);
+
+
