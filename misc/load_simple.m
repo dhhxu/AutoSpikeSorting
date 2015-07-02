@@ -3,6 +3,8 @@ function [strm, snip] = load_simple(tank, block, root)
 %
 % [STRM, SNIP] = LOAD_SIMPLE(TANK, BLOCK, ROOT)
 %
+% Requires TDT2mat.m
+%
 % Load the data struct (see TDT documentation for struct details) located in
 % tank named TANK, block number BLOCK. The tank directory is at the same level
 % as ROOT, which generally is the same as `pwd`. This function should not be
@@ -40,6 +42,8 @@ function [strm, snip] = load_simple(tank, block, root)
         error('Empty tank');
     elseif isempty(root)
         error('Empty root path');
+    elseif ~exist('TDT2mat', 'file')
+        error('TDT2mat required');
     end
 
     parent = fileparts(root);
