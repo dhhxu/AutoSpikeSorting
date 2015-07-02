@@ -16,6 +16,10 @@ function [] = load_path(root)
 % OUTPUT:
 % NONE
 
+    if isempty(root)
+        error('Missing argument');
+    end
+
     try
         addpath(genpath(root));
 %         addpath(genpath('\\khri-ses.adsroot.itcs.umich.edu\ses\3Shared\Matlab Scripts\Superspiketrain'));
