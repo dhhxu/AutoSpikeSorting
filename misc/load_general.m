@@ -1,34 +1,47 @@
-function [strm, snip] = load_general(tank, block, root)
+function [strm, snip] = load_general(path, block, root)
 % LOAD_GENERAL Load block data into workspace.
 %
-% [STRM, SNIP] = LOAD_GENERAL(TANK, BLOCK, ROOT)
+% [STRM, SNIP] = LOAD_GENERAL(PATH, BLOCK, ROOT)
 %
-% Load the data struct (see TDT documentation for struct details) located in
-% tank named TANK, block number BLOCK. The tank directory is at the same level
-% as ROOT, which generally is the same as `pwd`. This function should not be
-% called alone; it should only be invoked by the clustering script.
+% Requires TDT2mat.m
+%
+% Load stream and snippet structs from data in a TDT tank (directory). The tank
+% is located at the absolute path PATH. Only data in block number BLOCK is
+% loaded.
+
+% Most of the time, this function will be called by a clustering script.
+% Generally the clustering script is a child of the project root directory ROOT,
+% which is an absolute path. Usually ROOT will be equivalent to `pwd`
 %
 % The structure of the file system is as follows:
 %
 %   ..
-%    |__ TANK/
 %    |__ ROOT/
+%           |__ your_clustering_script.m
 %
-% If this is the first time TANK is loaded in this manner, this function 
-% saves the data struct to TANK-Block-BLOCK.mat, which is at the same level
-% as TANK and ROOT. So, after this function is invoked, the file system will
-% look like:
+% If this is the first time the tank located at path PATH is loaded in this
+% manner, the data struct containing the STRM and SNIP structs will be saved to
+% a .mat file for convenient later access. This .mat file will be called
+% <TANK>-Block-<BLOCK>.mat (brackets shown for clarity).
+%
+% The name TANK is the name of the directory described by PATH. The file will be
+% saved at the same level as ROOT.
+%
+% As an example, after this function is invoked on TANK, BLOCK for the first
+% time, the file system will look like:
 %
 %   ..
-%    |__ TANK/
-%    |__ ROOT/
 %    |__ TANK-Block-BLOCK.mat
+%    |__ ROOT/
+%           |__ your_clustering_script.m
+%
+% If this is not the first time this function has been called on TANK and BLOCK,
+% simply loads the saved .mat file.
 %
 % INPUT:
-% TANK      String of the tank name. Should be an existing directory
+% PATH      String of the absolute path to the tank directory
 % BLOCK     Positive integer of the desired block
-% ROOT      String of the path of the project files. Used to save the data in
-%           the right location for later use.
+% ROOT      String of the absolute path of the project.
 %
 % OUTPUT:
 % STRM      Struct containing raw stream data
@@ -37,30 +50,30 @@ function [strm, snip] = load_general(tank, block, root)
 
     if block <= 0
         error('Invalid block: %d', block);
-    elseif isempty(tank)
-        error('Empty tank');
+    elseif isempty(path)
+        error('Empty tank path');
     elseif isempty(root)
         error('Empty root path');
+    elseif ~exist('TDT2mat', 'file')
+        error('TDT2mat required');
+    elseif ~exist(path, 'dir')
+        error('Missing tank: %s', path);
     end
 
     parent = fileparts(root);
-    tank_path = fullfile(parent, tank);
-
-    if ~exist(tank_path, 'dir')
-        error('Missing tank: %s', tank);
-    end
-
-    data = load_block(tank, tank_path, block, parent);
+    data = load_block(path, block, parent);
     
     strm = data.streams.STRM;
     snip = data.snips.CSPK;
 end
 
-function [data] = load_block(tank_name, tank_path, block, parent)
+function [data] = load_block(tank_path, block, parent)
 % Helper function. Returns the data struct from TDT2mat call to TANK and BLOCK.
-% If the BLOCK has been loaded before by a previous call to load_simple, it
+% If the BLOCK has been loaded before by a previous call to load_general, it
 % should have been saved to a file. In this case, this function simply loads
 % that saved file into the workspace.
+
+    [~, tank_name, ~] = fileparts(tank_path);
 
     mat_name = sprintf('%s-Block-%d.mat', tank_name, block);
     mat_path = fullfile(parent, mat_name);
