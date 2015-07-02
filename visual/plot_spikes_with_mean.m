@@ -4,7 +4,8 @@ function [] = plot_spikes_with_mean(cluster, varargin)
 % PLOT_SPIKES_WITH_MEAN(CLUSTER, ...)
 %
 % Plots spikes in a CLUSTER on the same graph. Also plots the mean with a black
-% line. Additional arguments may be passed into the
+% line as well as two standard deviations above and below the mean spike in 
+% black dashed lines. Additional arguments may be passed into the
 % function, which will affect the spikes but not the mean spike. See plot() for
 % information on these arguments.
 %
@@ -23,7 +24,14 @@ function [] = plot_spikes_with_mean(cluster, varargin)
     for i = 1:size(cluster, 1);
         plot(cluster(i, :), varargin{1:end});
     end
-    plot(get_mean_spike(cluster), 'k', 'LineWidth', 3);
+    
+    mean_spike = get_mean_spike(cluster);
+    sd = std(cluster, 0, 1);
+    
+    plot(mean_spike, 'k', 'LineWidth', 3);
+    plot(mean_spike + 2 * sd, 'k-', 'LineWidth', 2);
+    plot(mean_spike - 2 * sd, 'k-', 'LineWidth', 2);
+    
     hold off;
     
 end
