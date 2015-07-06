@@ -27,7 +27,7 @@
 % implies consistency in the output format across different functions for each
 % step and fits the 'plug and play' intentions of this skeleton.
 
-function plain_pca
+function pca_kmeans
 
 %% Constants
 % Put your constants here for convenience.
@@ -69,7 +69,7 @@ load_path(ROOT);
 % dimensional vector of the processed raw data.
 
 strm_data = strm_struct.data(CHANNEL, :);
-strm_data = bpf(strm_data, FILTER_LOW, FILTER_HIGH, strm_struct.fs);
+strm_data = bpf(strm_data, FILTER_LOW, FILTER_HIGH, strm_struct.fs * 2);
 
 %% Step 2: Spike detection
 % You should implement your detection method as a function for ease of usage in
@@ -112,8 +112,9 @@ spike_matrix = align_custom(spike_matrix, MAX_SHIFT, 'min', WINDOW / 2, ...
 % the format of the FEATURES output is up to you to define, as there are many
 % ways to represent spike features.
 
-features = pca_coeff(.8, size(spike_matrix, 2), spike_matrix);
+% features = pca_coeff(.8, size(spike_matrix, 2), spike_matrix);
 
+features = pca_with_ks(.8, size(spike_matrix, 2), spike_matrix);
 
 %% Step 5: Clustering
 % You should implement your clustering algorithm as a function for ease of
