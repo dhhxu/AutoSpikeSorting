@@ -46,7 +46,7 @@ function [wavelet_coeffs] = quiroga_wavelet(spike_matrix)
     
     best_coeff_indices = select_coeffs(coeff_matrix, NUM_COEFF);
     
-    wavelet_coeffs = coeff_matrix(:, best_coeff_indices);
+    wavelet_coeffs = coeff_matrix(:, best_coeff_indices(1:10));
 
 end
 
@@ -74,6 +74,6 @@ function [best_coeff_indices] = select_coeffs(coeff_matrix, max_coeff)
     end
     
     [~, ordered_coeff_indices] = sort(ks_values, 2, 'descend');
-    best_coeff_indices = ordered_coeff_indices(1:10);
+    best_coeff_indices = ordered_coeff_indices(1:max_coeff);
 
 end
