@@ -1,7 +1,7 @@
-function [strm_struct, snip_struct] = prompt_data()
+function [strm_struct, snip_struct, name, block_num] = prompt_data()
 % PROMPT_DATA load tank/block data given user input.
 %
-% [STRM_STRUCT, SNIP_STRUCT] = PROMPT_DATA()
+% [STRM_STRUCT, SNIP_STRUCT, NAME] = PROMPT_DATA()
 %
 % Get user input for the tank/block to load. The functionality is the
 % same as LOAD_GENERAL, except with user input.
@@ -12,6 +12,8 @@ function [strm_struct, snip_struct] = prompt_data()
 % OUTPUT:
 % STRM_STRUCT   Struct of raw stream data
 % SNIP_STRUCT   Struct of TDT snippet data including timestamps
+% NAME          Name of the source tank
+% BLOCK_NUM     Block number
 
     path = uigetdir();
 
@@ -25,5 +27,6 @@ function [strm_struct, snip_struct] = prompt_data()
     clear C;
 
     [strm_struct, snip_struct] = load_general(tank_path, block_num, pwd);
-
+    [~, name, ~] = fileparts(tank_path);
+    
 end
