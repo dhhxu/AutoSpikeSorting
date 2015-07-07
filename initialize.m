@@ -35,6 +35,12 @@
 %   STRM_STRUCT         struct containing raw stream data and other info
 %   STRM_DATA           1-D vector of raw data for the user-specified channel
 %   SNIP_STRUCT         struct containing timestamps as determined by TDT
+%   CHANNEL             channel to perform clustering on
+%
+%   Furthermore, the values of these variables should not be modified. Instead,
+%   make a copy of them by assigning them a new variable name. Note the
+%   uppercase notation as a reminder to not change the values and/or assign to
+%   new values.
 %
 %   All user-made algorithms must perform the following functions before
 %   performing feature extraction and clustering:
@@ -92,19 +98,20 @@
 %   be written as their own independent scripts/functions.
 
 %% Step 1
+fprintf('Begin initialization\n');
 load_path(pwd);
 
 %% Step 2: Data selection
-[strm_struct, snip_struct] = prompt_data();
+[STRM_STRUCT, SNIP_STRUCT, tank_name, block_num] = prompt_data();
 
 %% Step 3: Channel selection.
 % If 'cancel' is called, this script will not clear the loaded data. Instead,
 % rerun this section again.
-nChannels = size(strm_struct.data, 1);
+nChannels = size(STRM_STRUCT.data, 1);
 CHANNEL = prompt_channel(nChannels);
-strm_data = strm_struct.data(CHANNEL, :);
+STRM_DATA = STRM_STRUCT.data(CHANNEL, :);
 
-fprintf('Channel %d loaded in variable strm_data\n', CHANNEL);
+fprintf('Loaded Tank %s, Block %d, Chan %d\n', tank_name, block_num, CHANNEL);
 
 %%
 % Environment is finished loading. Run your scripts either here, in the
