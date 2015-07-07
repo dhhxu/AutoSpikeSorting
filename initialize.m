@@ -26,6 +26,14 @@
 %      STRM_DATA. Note that if a different channel is desired later on, simply
 %      re-run the section labeled Step 3 to get the select channel dialog.
 %
+%   4. Bandpass filter the data (300-3000 Hz) and extract spike waveforms using
+%      timestamps from snippet information. The extracted spikes will be located
+%      in the SPIKE_MATRIX matrix and will be 32 samples (corresponding to ~1.3
+%      ms at roughly 24.4 kHz).
+%
+%      Do note that the user algorithm may implement a different version of this
+%      step but must save the result to a new variable name (more details below)
+%
 %
 % Requirements for user-made algorithms:
 %
@@ -36,26 +44,32 @@
 %   STRM_DATA           1-D vector of raw data for the user-specified channel
 %   SNIP_STRUCT         struct containing timestamps as determined by TDT
 %   CHANNEL             channel to perform clustering on
+%   SPIKE_MATRIX        matrix of spike waveforms
 %
 %   Furthermore, the values of these variables should not be modified. Instead,
 %   make a copy of them by assigning them a new variable name. Note the
 %   uppercase notation as a reminder to not change the values and/or assign to
 %   new values.
 %
-%   All user-made algorithms must perform the following functions before
-%   performing feature extraction and clustering:
+%   All user-made algorithms must perform at a minimum the following:
+%   	a. feature extraction
+%       b. clustering
 %
-%       a. Filter the data
-%       b. Extract spikes corresponding to timestamps in SNIP_STRUCT. The result
-%          should be be a matrix called SPIKE_MATRIX. The rows correspond to
-%          spikes, columns to samples.
+%   Adhering to the minimum imposes the restriction of bandpass filtered data,
+%   as currently the only detection method in use uses TDT timestamps to locate
+%   spike events. However, user algorithms may implement their own filtering
+%   method but must use TDT's spike extraction method (see TDT_SPIKES). Also,
+%   the alternative filter method must be clearly documented in the algorithm
+%   header.
 %
-%   In general, the algorithms should be written as nonparametric functions to
-%   avoid cluttering the workspace. The output should be the classification
-%   vector, which will aid in clustering evaluation and algorithm comparison. In
-%   other words, the structure of an algorithm is as follows:
+%   WARNING: Take care not to overwrite the SPIKE_MATRIX created by this script!
 %
-%       class = your_algorithm();
+%   The following is the expected signature of user-algorithms:
+%
+%       class = your_algorithm()
+%
+%       where 'your_algorithm' clearly describes the feature extraction method
+%       and clustering algorithm used.
 %
 %
 % Usage:
@@ -112,6 +126,19 @@ CHANNEL = prompt_channel(nChannels);
 STRM_DATA = STRM_STRUCT.data(CHANNEL, :);
 
 fprintf('Loaded Tank %s, Block %d, Chan %d\n', tank_name, block_num, CHANNEL);
+
+%% Step 4: Filtering and extraction.
+
+LO = 300;
+HI = 3000;
+WINDOW = 32;
+MAX_SHIFT = 10;
+
+processed_data = bpf(STRM_DATA, LO, HI, STRM_STRUCT.fs * 2);
+spikes = tdt_spikes(processed_data, STRM_STRUCT, SNIP_STRUCT, CHANNEL, WINDOW);
+SPIKE_MATRIX = align_custom(spikes, MAX_SHIFT, 'min', WINDOW / 2, ...
+                            WINDOW / 2);
+clear processed_data;
 
 %%
 % Environment is finished loading. Run your scripts either here, in the
