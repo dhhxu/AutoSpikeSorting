@@ -6,6 +6,8 @@ function [strm_struct, snip_struct, name, block_num] = prompt_data()
 % Get user input for the tank/block to load. The functionality is the
 % same as LOAD_GENERAL, except with user input.
 %
+% Note: this function should be called
+%
 % INPUT:
 % NONE
 %
