@@ -26,7 +26,9 @@ function [rf_blocks] = find_rfs(varargin)
 % RF_BLOCKS     1xN cell, where N is number of blocks. Each element is an 1-D
 %               integer vector of the parts within the corresponding block that
 %               contain receptive fields.
+%               If an error occurs, the value is zero.
 
+    rf_blocks = 0;
 
     if ~exist('TDT2mat', 'file')
         error('TDT2mat required');
@@ -34,7 +36,6 @@ function [rf_blocks] = find_rfs(varargin)
     
     CUTOFF = 8;     %  minimum number of unique values to be considered RF.
 
-    path = '';
     if nargin > 1
         error('Too many arguments');
     elseif nargin == 1
@@ -44,6 +45,9 @@ function [rf_blocks] = find_rfs(varargin)
         end
     else
         path = uigetdir();
+        if ~path
+            error('No tank selected');
+        end
     end
     
     n = block_count(path);
@@ -86,7 +90,6 @@ function [frq, lvl, fInd] = open_block(path, block_num)
         fInd = [];
     end
 end
-
 
 function [rf_parts] = find_rfs_in_block(frq, lvl, fInd, cutoff)
 % Returns a vector containing the indices of the parts within a given block that
