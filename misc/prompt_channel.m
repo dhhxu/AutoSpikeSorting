@@ -35,6 +35,7 @@ function [channel] = prompt_channel(nChannels)
         
         [channel, status] = str2num(raw_channel{1});
         if ~status || channel < 1 || channel > nChannels
+            warning('Invalid channel entered. Channel must be an integer.');
             continue;
         else
             return;
