@@ -6,7 +6,9 @@ function [strm_struct, snip_struct, name, block_num] = prompt_data()
 % Get user input for the tank/block to load. The functionality is the
 % same as LOAD_GENERAL, except with user input.
 %
-% Note: this function should be called
+% If 'cancel' is selected, no path is chosen and all output fields will be
+% empty. The user must then re-run the section containing this function to
+% get another dialog prompt.
 %
 % INPUT:
 % NONE
@@ -18,6 +20,15 @@ function [strm_struct, snip_struct, name, block_num] = prompt_data()
 % BLOCK_NUM     Block number
 
     path = uigetdir();
+    
+    if ~path
+        warning('No tank/block selected. Returning empty results');
+        strm_struct = 0;
+        snip_struct = 0;
+        name = 0;
+        block_num = 0;
+        return;
+    end
 
     % path will look like: PATH TO TANK / BLOCK-N
 
