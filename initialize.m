@@ -113,34 +113,56 @@
 
 %% Step 1
 fprintf('Begin initialization\n');
-load_path(pwd);
+load_path(pwd);  % pwd should be the root of your project directory.
 
 %% Step 2: Data selection
 [STRM_STRUCT, SNIP_STRUCT, tank_name, block_num] = prompt_data();
+
+if ~STRM_STRUCT || ~SNIP_STRUCT || ~tank_name || ~block_num
+    error('No tank/block chosen.');
+end
 
 %% Step 3: Channel selection.
 % If 'cancel' is called, this script will not clear the loaded data. Instead,
 % rerun this section again.
 nChannels = size(STRM_STRUCT.data, 1);
 CHANNEL = prompt_channel(nChannels);
+
+if ~CHANNEL
+    error('No channel selected. Re-run Step 3 to restart.');
+end
+
 STRM_DATA = STRM_STRUCT.data(CHANNEL, :);
 
 fprintf('Loaded Tank %s, Block %d, Chan %d\n', tank_name, block_num, CHANNEL);
-
+clear tank_name block_num;
 %% Step 4: Filtering and extraction.
 
-LO = 300;
-HI = 3000;
-WINDOW = 32;
-MAX_SHIFT = 10;
+D = defaults();
 
-processed_data = bpf(STRM_DATA, LO, HI, STRM_STRUCT.fs * 2);
-spikes = tdt_spikes(processed_data, STRM_STRUCT, SNIP_STRUCT, CHANNEL, WINDOW);
-SPIKE_MATRIX = align_custom(spikes, MAX_SHIFT, 'min', WINDOW / 2, ...
-                            WINDOW / 2);
+processed_data = bpf(STRM_DATA, D.LO, D.HI, STRM_STRUCT.fs * 2);
+spikes = tdt_spikes(processed_data, STRM_STRUCT, SNIP_STRUCT, CHANNEL, ...
+                    D.WINDOW);
+
 clear processed_data;
 
+%% Step 5: Spike Alignment
+% Hitting 'cancel' will put erroneous values for option, shift, and window,
+% causing the script to abort. The variables will be saved, and the process can
+% be restarted by re-running this section.
+[option, shift, window] = prompt_align(spikes);
+
+if isempty(option) || ~shift || ~window
+    error('Invalid alignment options. Re-run Step 6 to restart.');
+else
+   fprintf('Aligning spikes on %s, max shift %d, window size %d', option, ...
+           shift, window);
+end
+
+SPIKE_MATRIX = align_custom(spikes, shift, option, window / 2, ...
+                            window / 2);
+
+clear option shift window;
 %%
 % Environment is finished loading. Run your scripts either here, in the
 % command prompt, or in a dedicated framework (recommended).
-
