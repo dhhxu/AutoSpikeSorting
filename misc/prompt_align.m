@@ -1,9 +1,10 @@
-function [option, shift, window] = prompt_align()
+function [option, shift, window] = prompt_align(spikes)
 % PROMPT_ALIGN prompt user for spike alignment options.
 %
-% [OPTION, SHIFT, WINDOW] = PROMPT_ALIGN()
+% [OPTION, SHIFT, WINDOW] = PROMPT_ALIGN(SPIKES)
 %
-% Prompt the user to select spike alignment according to spike maximum or
+% First plots the spikes in matrix SPIKES on top of each other. Then
+% prompt the user to select spike alignment according to spike maximum or
 % minimum ('max' or 'min'), the shift amount (default: 10 units), and number of
 % samples in a spike (default: 32). If an invalid option is entered, keeps
 % prompting user unless 'cancel' occurs.
@@ -12,7 +13,7 @@ function [option, shift, window] = prompt_align()
 % script/function will need to handle the erroneous output.
 %
 % INPUT:
-% NONE
+% SPIKES    NxM matrix where rows are spikes
 %
 % OUTPUT:
 % OPTION    Spike alignment option. Either 'max' or 'min'
@@ -20,6 +21,8 @@ function [option, shift, window] = prompt_align()
 % WINDOW    Positive integer of number of samples in a spike waveform. Ideally
 %           an even number. Even better if it's a power of 2.
     
+    plotspikes(spikes);
+
     d = defaults();
 
     option_prompt = sprintf('Alignment option (''max'', ''min'')');
