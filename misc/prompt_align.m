@@ -36,7 +36,8 @@ function [option, shift, window] = prompt_align()
         answer = inputdlg(prompt, title, numlines, def);
     
         if isempty(answer)
-            warning('No options entered. Option and Shift values left empty');
+            warning( ...
+                'No options entered. Option, Shift, Window values left empty');
             option = '';
             shift = 0;
             window = 0;
