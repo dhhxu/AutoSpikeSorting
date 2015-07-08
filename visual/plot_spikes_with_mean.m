@@ -29,8 +29,8 @@ function [] = plot_spikes_with_mean(cluster, varargin)
     sd = std(cluster, 0, 1);
     
     plot(mean_spike, 'k', 'LineWidth', 3);
-    plot(mean_spike + 2 * sd, 'k-', 'LineWidth', 2);
-    plot(mean_spike - 2 * sd, 'k-', 'LineWidth', 2);
+    plot(mean_spike + 2 * sd, 'k--', 'LineWidth', 2);
+    plot(mean_spike - 2 * sd, 'k--', 'LineWidth', 2);
     
     hold off;
     
