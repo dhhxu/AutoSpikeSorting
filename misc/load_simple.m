@@ -35,6 +35,8 @@ function [strm, snip] = load_simple(tank, block, root)
 % STRM      Struct containing raw stream data
 % SNIP      Struct containing snippet data with timestamps of user-identified
 %           spike waveforms
+%
+% See also TDT2mat
 
     if block <= 0 || isempty(tank) || isempty(root)
         error('Invalid block: %d', block);

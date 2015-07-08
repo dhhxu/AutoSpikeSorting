@@ -8,7 +8,7 @@ function [strm, snip] = load_general(path, block, root)
 % Load stream and snippet structs from data in a TDT tank (directory). The tank
 % is located at the absolute path PATH. Only data in block number BLOCK is
 % loaded.
-
+%
 % Most of the time, this function will be called by a clustering script.
 % Generally the clustering script is a child of the project root directory ROOT,
 % which is an absolute path. Usually ROOT will be equivalent to `pwd`
@@ -47,6 +47,8 @@ function [strm, snip] = load_general(path, block, root)
 % STRM      Struct containing raw stream data
 % SNIP      Struct containing snippet data with timestamps of user-identified
 %           spike waveforms
+%
+% See also TDT2mat
 
     if block <= 0
         error('Invalid block: %d', block);
