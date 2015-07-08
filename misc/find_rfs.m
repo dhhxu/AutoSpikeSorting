@@ -11,8 +11,11 @@ function [rf_blocks] = find_rfs(varargin)
 % receptive field blocks. The method is as follows: in a given block, there are
 % frequency, level, and file index vectors, which all are same length. For each
 % unique file index, if there are enough unique corresponding frequencies and
-% levels to that index, then the block is considered with high probability to
-% have a receptive field. Currently the cutoff is set to eight (8).
+% levels to that index, then that index is considered with high probability to
+% have a receptive field. This means that a block may have more than one
+% receptive field.
+%
+% Currently, the cutoff is set to eight (8).
 %
 % Requires TDT2mat.m
 %
@@ -20,7 +23,10 @@ function [rf_blocks] = find_rfs(varargin)
 % TANK_PATH     String of absolute path to a tank directory
 %
 % OUTPUT:
-% RF_BLOCKS     1xN vector of receptive field block numbers
+% RF_BLOCKS     1xN cell, where N is number of blocks. Each element is an 1-D
+%               integer vector of the parts within the corresponding block that
+%               contain receptive fields.
+
 
     if ~exist('TDT2mat', 'file')
         error('TDT2mat required');
@@ -41,16 +47,17 @@ function [rf_blocks] = find_rfs(varargin)
     end
     
     n = block_count(path);
-    rfs = zeros(1, n);
+    rf_blocks = cell(1, n);
     for i = 1:n
         [frq, lvl, fInd] = open_block(path, i);
-        if isRF(frq, lvl, fInd, CUTOFF)
-            rfs(i) = i;
+        if isempty(frq) || isempty(lvl) || isempty(fInd)
+            warning('Skipping block %d', i);
+            continue
         end
+
+        rf_blocks{i} = find_rfs_in_block(frq, lvl, fInd, CUTOFF);
     end
-    
-    rfs(rfs == 0) = [];
-    rf_blocks = rfs;
+
 end
 
 function [num_blocks] = block_count(path)
@@ -63,6 +70,7 @@ end
 function [frq, lvl, fInd] = open_block(path, block_num)
 % Opens block BLOCK_NUM in tank located at PATH. Returns the frequency
 % vector FRQ, level vector LVL, and file index vector FIND.
+% If an error occurs, frq, lvl, and fInd are empty vectors.
 
     try
         block_str = sprintf('Block-%d', block_num);
@@ -73,25 +81,42 @@ function [frq, lvl, fInd] = open_block(path, block_num)
         fInd = data.epocs.FInd.data;
     catch
         warning('Problem in opening block %d', block_num);
+        frq = [];
+        lvl = [];
+        fInd = [];
     end
 end
 
-function [boolean] = isRF(frq, lvl, fInd, cutoff)
-% Returns true if the current block has a RF given information on FRQ, LVL, and
-% FIND. The CUTOFF is the minimum number of unique frequencies and level within
-% each FIND index.
 
-    boolean = true;
-    uniqF = unique(fInd);
-    for i = 1:length(uniqF)
-        index = uniqF(i);
-        matchFrq = frq(fInd == index);
-        matchLvl = lvl(fInd == index);
-        
-        if length(unique(matchFrq)) < cutoff || ...
-           length(unique(matchLvl)) < cutoff
-            boolean = false;
-            return;
-        end
+function [rf_parts] = find_rfs_in_block(frq, lvl, fInd, cutoff)
+% Returns a vector containing the indices of the parts within a given block that
+% contain receptive fields. Uses the simple metric.
+
+    parts = unique(fInd);
+    rf_parts = zeros(1, length(parts));
+    for i = 1:length(parts)
+       partNum = parts(i);
+       partIndices = (fInd == partNum);
+       matchFrq = frq(partIndices);
+       matchLvl = lvl(partIndices);
+       
+       if isRFsimple(matchFrq, matchLvl, cutoff)
+           rf_parts(i) = i;
+       end
     end
+    
+    rf_parts(rf_parts == 0) = [];
+end
+
+function [boolean] = isRFsimple(frq, lvl, cutoff)
+% Simple test. If a block has at least CUTOFF unique FRQ and LVL values, it is
+% considered to contain a receptive field.
+
+    uniqF = unique(frq);
+    uniqL = unique(lvl);
+    boolean = false;
+    if length(uniqF) >= cutoff && length(uniqL) >= cutoff
+        boolean = true;
+    end
+
 end
