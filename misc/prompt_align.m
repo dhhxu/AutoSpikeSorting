@@ -8,7 +8,8 @@ function [option, shift, window] = prompt_align()
 % samples in a spike (default: 32). If an invalid option is entered, keeps
 % prompting user unless 'cancel' occurs.
 %
-% If a 'cancel' occurs ...
+% If a 'cancel' occurs then the outputs will be empty, and the caller
+% script/function will need to handle the erroneous output.
 %
 % INPUT:
 % NONE
