@@ -5,7 +5,9 @@ function [] = plotspikes(spikes, varargin)
 %
 % Plots the spikes in the SPIKES matrix on the same plot. This is to help
 % visualize the waveform shapes. Additional arguments may be passed into the
-% function. See plot() for information on these arguments.
+% function.
+%
+% See also PLOT
 %
 % INPUT:
 % SPIKES    MxN numeric matrix where each row represents a spike waveform.
