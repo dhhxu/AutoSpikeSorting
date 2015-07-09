@@ -75,6 +75,7 @@ function [option, shift, window] = prompt_align(spikes)
             def = {option, shift, num2str(d.WINDOW)};
             continue;
         else
+            close('plotspikes');
             return;
         end
     end
