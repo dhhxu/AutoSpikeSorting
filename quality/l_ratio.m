@@ -16,6 +16,11 @@ function [lratio] = l_ratio(feature_matrix, cluster_indices)
 %
 % OUTPUT:
 % LRATIO            The L-ratio cluster quality measure.
+%
+% SOURCE:
+% Schmitzer-Torbert, N., Jackson, J., Henze, D., Harris, K., & Redish, A. D.
+% (2005). Quantitative measures of cluster quality for use in extracellular
+% recordings. Neuroscience, 131(1), 1-11.
 
     if isempty(feature_matrix)
         error('Invalid feature matrix');
