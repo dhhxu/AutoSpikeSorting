@@ -1,6 +1,6 @@
 function nClusters = preview_clusters(spike_matrix)
-% PREVIEW_CLUSTERS Get user estimate of number of clusters by showing 3D plot of
-% first 3 principal components.
+% PREVIEW_CLUSTERS Get user estimate of number of clusters by showing 2D plot of
+% first 2 principal components.
 %
 % NCLUSTERS = PREVIEW_CLUSTERS(SPIKE_MATRIX)
 %
@@ -16,7 +16,7 @@ function nClusters = preview_clusters(spike_matrix)
 % OUTPUT:
 % NCLUSTERS     User estimate of the number of clusters. Must be positive
 
-    pca_visual(spike_matrix);
+    pca_visual(spike_matrix, 2);
     
     prompt = {sprintf('Estimate of number of clusters')};
     numlines = 1;
@@ -36,6 +36,7 @@ function nClusters = preview_clusters(spike_matrix)
             warning('Invalid estimate entered: %s', input{1});
             continue;
         else
+            close('PCA 2D');
             return;
         end
     end
