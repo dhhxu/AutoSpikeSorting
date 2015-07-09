@@ -19,25 +19,33 @@ function [strm_struct, snip_struct, name, block_num] = prompt_data()
 % NAME          Name of the source tank
 % BLOCK_NUM     Block number
 
+    strm_struct = [];
+    snip_struct = [];
+    name = '';
+    block_num = 0;
+
     path = uigetdir();
     
     if ~path
         warning('No tank/block selected. Returning empty results');
-        strm_struct = 0;
-        snip_struct = 0;
-        name = 0;
-        block_num = 0;
         return;
     end
 
-    % path will look like: PATH TO TANK / BLOCK-N
+    % path should look like: PATH TO TANK / BLOCK-N. If not this is an error.
 
     [tank_path, block, ~] = fileparts(path);
 
     % get block number
     C = strsplit(block, '-');
-    block_num = str2num(C{2});
-    clear C;
+    
+    if length(C) < 2
+        error('Invalid block directory selected');
+    end
+    
+    [block_num, status] = str2num(C{2});
+    if ~status
+        error('Invalid block directory selected.');
+    end
 
     [strm_struct, snip_struct] = load_general(tank_path, block_num, pwd);
     [~, name, ~] = fileparts(tank_path);
