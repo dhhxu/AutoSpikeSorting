@@ -19,7 +19,7 @@ function [] = plotspikes(spikes, varargin)
 
     opengl software;
 
-    figure('Name', 'Spikes');
+    figure('Name', 'plotspikes');
     hold on;
     for i = 1:size(spikes, 1);
         plot(spikes(i, :), varargin{1:end});
