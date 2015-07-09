@@ -8,6 +8,11 @@ function [lratio] = l_ratio(feature_matrix, cluster_indices)
 % feature space is F-dimensional. The cluster c is described by a vector of
 % indices into FEATURE_MATRIX.
 %
+% This metric is derived from Schmitzer-Torbert's 2005 paper. Lratio is
+% positively correlated with Type II errors (false omissions). Should be used in
+% conjunction with Isolation Distance to evaluate clustering quality. Lower
+% Lratio and higher Isolation Distance together indicate better cluster quality.
+%
 % INPUT:
 % FEATURE_MATRIX    NxF matrix of feature vectors of spike waveforms. The
 %                   feature space is F-dimensional.
@@ -17,7 +22,6 @@ function [lratio] = l_ratio(feature_matrix, cluster_indices)
 % OUTPUT:
 % LRATIO            The L-ratio cluster quality measure.
 %
-% SOURCE:
 % Schmitzer-Torbert, N., Jackson, J., Henze, D., Harris, K., & Redish, A. D.
 % (2005). Quantitative measures of cluster quality for use in extracellular
 % recordings. Neuroscience, 131(1), 1-11.
