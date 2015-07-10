@@ -1,17 +1,19 @@
-function class = pca_em(info)
-% PCA_EM Standard PCA features with EM clustering using GMM.
+function class = wtks_kmeans(info)
+% WTKS_KMEANS wavelet transform features with k-means.
 %
-% CLASS = PCA_EM(INFO)
+% CLASS = WTKS_KMEANS(INFO)
 %
-% Template for spike sorting algorithms. INFO contains spike waveform data and
+% Uses Quiroga's wavelet transform method. INFO contains spike waveform data and
 % other variables of use. Default processing of the data is described below:
 %
 % Filter: bandpass filter with elliptic passband (300-3000 Hz)
 % Detection: determined from TDT timestamps
 % Extraction: Symmetric window of 32 samples corresponding to ~2.6 ms @~12.2 kHz
 %
-% Features: PCA, scores with 80% variance
-% Clustering: EM with Gaussian Mixture Model
+% Usage: save this file to a new function and give it a descriptive name.
+%
+% Features: Wavelet Transform coefficients selected via KS test
+% Clustering: k-means
 %
 % INPUT:
 % INFO      Struct containing spike data
@@ -26,10 +28,17 @@ function class = pca_em(info)
 %% Step 2: Spike extraction and alignment
 
 %% Step 3: Feature Extraction
-    features = pca_coeff(.8, size(info.SPIKE_MATRIX, 2), info.SPIKE_MATRIX);
+    features = quiroga_wavelet(info.SPIKE_MATRIX);
 
 %% Step 4: Clustering
 
+    nc = preview_clusters(info.SPIKE_MATRIX);
+
+    if nc
+        class = kmeans(features, nc);
+    else
+        error('Invalid estimate entered');
+    end
 
 %% Step 5: Evaluation
 % Put code for evaluating the quality of the clustering step.
