@@ -162,7 +162,7 @@ INFO.CHAN_DATA = CHAN_DATA;
 
 D = defaults();
 
-processed_data = bpf(CHAN_DATA, D.LO, D.HI, STRM_STRUCT.fs * 2);
+processed_data = bpf(CHAN_DATA, D.LO, D.HI, STRM_STRUCT.fs);
 spikes = tdt_spikes(processed_data, STRM_STRUCT, SNIP_STRUCT, CHANNEL, ...
                     D.WINDOW);
 
