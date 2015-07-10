@@ -30,7 +30,7 @@ function class = pca_kmeans(info)
 
 %% Step 4: Clustering
 
-    nc = preview_clusters(info.SPIKE_MATRIX);
+    nc = preview_pca_clusters(info.SPIKE_MATRIX);
 
     if nc
         class = kmeans(features, nc);
@@ -41,7 +41,18 @@ function class = pca_kmeans(info)
 %% Step 5: Evaluation
 % Put code for evaluating the quality of the clustering step.
 
-   draw_clusters(info.SPIKE_MATRIX, class);
+%    draw_clusters(info.SPIKE_MATRIX, class);
+   
+   updated = find_outliers(features, class, 3);
+   
+   
+%    for i = 1:nc
+%       index = find(class == i);
+%       isodist = isolation_distance(features, index);
+%       fprintf('Base: Isolation distance for cluster %d: %2.2f\n', i, isodist);
+%    end
+   
+   
 
 %% Step 6: Additional Processing (if necessary)
 
@@ -50,4 +61,4 @@ function class = pca_kmeans(info)
 
     plotPca2d(features, class);
 
-
+    plotPca2d(features, updated);

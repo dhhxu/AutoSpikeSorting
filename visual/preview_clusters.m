@@ -1,8 +1,8 @@
-function nClusters = preview_clusters(spike_matrix)
-% PREVIEW_CLUSTERS Get user estimate of number of clusters by showing 2D plot of
-% first 2 principal components.
+function nClusters = preview_pca_clusters(spike_matrix)
+% PREVIEW_PCA_CLUSTERS Get user estimate of number of clusters by showing 2D
+% plot of first 2 principal components.
 %
-% NCLUSTERS = PREVIEW_CLUSTERS(SPIKE_MATRIX)
+% NCLUSTERS = PREVIEW_PCA_CLUSTERS(SPIKE_MATRIX)
 %
 % Given spike waveform data in matrix SPIKE_MATRIX, where each row is a spike
 % waveform, plot the first three principal components in 3D space. Then prompts

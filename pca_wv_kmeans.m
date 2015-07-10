@@ -33,7 +33,7 @@ function class = pca_wv_kmeans(info)
 
 %% Step 4: Clustering
 
-    nc = preview_clusters(spikes);
+    nc = preview_pca_clusters(spikes);
 
     if nc
         class = kmeans(features, nc);
