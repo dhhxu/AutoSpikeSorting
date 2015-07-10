@@ -56,6 +56,7 @@
 %   SNIP_STRUCT         struct containing timestamps as determined by TDT
 %   CHANNEL             channel to perform clustering on
 %   SPIKE_MATRIX        matrix of spike waveforms in channel CHANNEL
+%   WINDOW              integer of number of samples per spike waveform
 %
 %   Furthermore, the values of these variables should not be modified. Instead,
 %   make a copy of them by assigning them a new variable name. Note the
@@ -167,6 +168,7 @@ spikes = tdt_spikes(processed_data, STRM_STRUCT, SNIP_STRUCT, CHANNEL, ...
                     DEFAULTS.WINDOW);
 
 clear processed_data;
+INFO.WINDOW = DEFAULTS.WINDOW;
 
 %% Step 5: Spike Alignment
 % Hitting 'cancel' will put erroneous values for option, shift, and window,
