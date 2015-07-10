@@ -31,7 +31,7 @@ function dist = iso_dist_core(feature_matrix, cluster_indices)
     nc = length(cluster_indices);
     others = setdiff(1:size(feature_matrix, 1), cluster_indices);
     
-    if nc > others
+    if nc > length(others)
         error('Cannot calculate isolation distance. Nc too large');
     end
     
