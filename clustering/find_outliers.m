@@ -21,12 +21,14 @@ function [updated_class] = find_outliers(feature_matrix, class, threshold)
 % OUTPUT:
 % UPDATED_CLASS     Nx1 vector where outlier spikes' class is set to a new
 %                   class. This new class is set to -1;
+
+    [nSpikes, nFeatures] = size(feature_matrix);
     
     feature_clusters = separate_clusters(feature_matrix, class);
     nClusters = length(feature_clusters);
     
-    % Array holding feature cluster centers.
-    f_means = zeros(nClusters, 1);
+    % Matrix holding feature cluster centers.
+    f_means = zeros(nClusters, nFeatures);
     
     % Array holding standard deviation of distance for each cluster
     f_sds = zeros(nClusters, 1);
@@ -34,23 +36,19 @@ function [updated_class] = find_outliers(feature_matrix, class, threshold)
     for i = 1:nClusters
         m = feature_clusters{i};
         f_mean = get_mean_spike(m);
+        f_means(i, :) = f_mean;
         
-        % N x 1 vector of distances between cluster points and center
         D = pdist2(m, f_mean);
-        
         f_sds(i) = std(D);
-        
     end
     
     updated_class = class;
-    
-    nSpikes = size(feature_matrix, 1);
     
     for j = 1:nSpikes
         spike_class = class(j);
         spike = feature_matrix(j, :);
         
-        class_mean = f_means(spike_class);
+        class_mean = f_means(spike_class, :);
         
         d = pdist2(spike, class_mean);
         
