@@ -12,6 +12,11 @@ function [clusters] = separate_clusters(spike_matrix, class)
 %               samples.
 % CLASS         Mx1 integer vector containing the cluster assignment for each
 %               spike waveform.
+% 
+% OUTPUT:
+% CLUSTERS      Cell where elements are smaller spike matrices of spikes that
+%               are sorted to the same cluster. The size of CLUSTERS is the
+%               number of clusters.
 
     if isempty(spike_matrix)
         error('Invalid spike matrix');
