@@ -160,11 +160,11 @@ INFO.CHAN_DATA = CHAN_DATA;
 
 %% Step 4: Filtering and extraction.
 
-D = defaults();
+DEFAULTS = defaults();
 
-processed_data = bpf(CHAN_DATA, D.LO, D.HI, STRM_STRUCT.fs);
+processed_data = bpf(CHAN_DATA, DEFAULTS.LO, DEFAULTS.HI, STRM_STRUCT.fs);
 spikes = tdt_spikes(processed_data, STRM_STRUCT, SNIP_STRUCT, CHANNEL, ...
-                    D.WINDOW);
+                    DEFAULTS.WINDOW);
 
 clear processed_data;
 
