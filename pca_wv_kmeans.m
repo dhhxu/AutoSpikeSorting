@@ -29,34 +29,51 @@ function class = pca_wv_kmeans(info)
 
 %% Step 3: Feature Extraction
 
-    features = pca_coeff(.8, size(spikes, 2), spikes);
+%     features = pca_coeff(.8, size(spikes, 2), spikes);
+    features = pca_coeff(1, 3, spikes);
 
 %% Step 4: Clustering
 
-    nc = preview_pca_clusters(spikes);
+    K = preview_pca_clusters(features);
 
-    if nc
-        class = kmeans(features, nc);
-    else
+    if ~K
         error('Invalid estimate entered');
     end
+    
+    MAX_ITER = 20;
+    total = 0;
+    totaldn = 0;
+    for i = 1:MAX_ITER
+        class = kmeans(features, K);
+        updated = find_outliers(features, class, 2);
+        actual = features(updated > 0, :);
+        value = db_index(actual, updated(updated > 0));
+        dn = indexDN(actual, updated(updated>0));
+        total = total + value;
+        totaldn = totaldn + dn;
+    end
+    
+    fprintf('db index: %2.2f; dn index: %2.2f\n', total / MAX_ITER, ...
+             totaldn / MAX_ITER);
 
 %% Step 5: Evaluation
 % Put code for evaluating the quality of the clustering step.
 
-   draw_clusters(spikes, class);
+   draw_clusters(spikes, updated);
    
-   for i = 1:nc
-      index = find(class == i);
+   for i = 1:K
+      index = find(updated == i);
       isodist = isolation_distance(features, index);
-      fprintf('WV: Isolation distance for cluster %d: %2.2f\n', i, isodist);
+      lr = l_ratio(features, index);
+      fprintf('WFilter + base: Isolation/Lratio for cluster %d: %2.2f/%2.2f\n', i, isodist, lr);
    end
+   
+   
 
 %% Step 6: Additional Processing (if necessary)
 
 %% Step 7: Visualization (optional)
 % Please add the line 'opengl software' to your visualization scripts.
 
-    plotPca2d(features, class);
 
 
