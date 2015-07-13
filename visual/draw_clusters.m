@@ -29,7 +29,7 @@ end
 function [] = draw_clusters_core(spike_matrix, class)
 
     clusters = separate_clusters(spike_matrix, class);
-    nClusters = length(unique(class));
+    nClusters = length(clusters);
     
     for i = 1:nClusters
         plot_spikes_with_mean(clusters{i}, 'r');

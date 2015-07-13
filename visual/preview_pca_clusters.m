@@ -36,6 +36,7 @@ function nClusters = preview_pca_clusters(spike_matrix)
             warning('Invalid estimate entered: %s', input{1});
             continue;
         else
+            fprintf('Number of selected clusters: %d\n', nClusters);
             close('PCA 2D');
             return;
         end
