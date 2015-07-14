@@ -7,7 +7,6 @@ function [] = load_path(root)
 % path. Generally ROOT is the output of the `pwd` function. Also loads external
 % scripts located in the 'code' directory.
 %
-%
 % INPUT:
 % ROOT      String of the project root directory, usually `pwd`
 %
@@ -17,6 +16,8 @@ function [] = load_path(root)
     if isempty(root)
         error('Missing argument');
     end
+    
+    fprintf('load_path: start...');
 
     try
         addpath(genpath(root));
@@ -24,13 +25,15 @@ function [] = load_path(root)
         codePath = fullfile(root, 'code');
         addpath(genpath(codePath));
     catch
-        error('Path load failed.');
+        error('\nPath load failed.');
     end
     
     % remove .git/
     try
         rmpath(genpath(fullfile(root, '.git')));
     catch
-        error('Failed to remove .git directory');
+        error('\nFailed to remove .git directory');
     end
+    
+    fprintf('done\n');
 end
