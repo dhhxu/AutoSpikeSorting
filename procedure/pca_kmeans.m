@@ -10,7 +10,7 @@ function class = pca_kmeans(info)
 %
 % Filter: bandpass filter with elliptic passband (300-3000 Hz)
 % Detection: determined from TDT timestamps
-% Extraction: Symmetric window of 32 samples corresponding to ~1.3 ms
+% Extraction: Symmetric window of 32 samples corresponding to ~2.6 ms
 % Features: First 3 PCA components
 % Clustering: k-means, K determined by evalclusters
 %
@@ -20,17 +20,13 @@ function class = pca_kmeans(info)
 % OUTPUT:
 % CLASS     1-D vector of integer class labels
 %
-% See also evalclusters
+% See also EVALCLUSTERS
 
-%% Step 1: Filtering
-
-%% Step 2: Spike extraction and alignment
-
-%% Step 3: Feature Extraction
+%% Features
 
     features = pca_coeff(1, 3, info.SPIKE_MATRIX);
 
-%% Step 4: Clustering
+%% Clustering
 
     K = preview_pca_clusters(info.SPIKE_MATRIX);
 
@@ -51,23 +47,5 @@ function class = pca_kmeans(info)
         totaldn = totaldn + dn;
     end
     
-    fprintf('db index: %2.2f; dn index: %2.2f\n', total / MAX_ITER, ...
-             totaldn / MAX_ITER);
-%% Step 5: Evaluation
-% Put code for evaluating the quality of the clustering step.
-
-%    draw_clusters(info.SPIKE_MATRIX, class);
-
-%    draw_clusters(info.SPIKE_MATRIX, updated);
-   for i = 1:K
-      index = find(updated == i);
-      isodist = isolation_distance(features, index);
-      lr = l_ratio(features, index);
-      fprintf('Base: Isolation/Lratio for cluster %d: %2.2f/%2.2f\n', i, isodist, lr);
-   end
-
-%% Step 6: Additional Processing (if necessary)
-
-%% Step 7: Visualization (optional)
-% Please add the line 'opengl software' to your visualization scripts.
+end
 
