@@ -135,9 +135,6 @@ if isempty(STRM_STRUCT) || isempty(SNIP_STRUCT) || isempty(tank_name) ...
     error('No tank/block chosen.');
 end
 
-STRM_DATA = STRM_STRUCT.data;
-
-INFO.STRM_DATA = STRM_DATA;
 INFO.STRM_STRUCT = STRM_STRUCT;
 INFO.SNIP_STRUCT = SNIP_STRUCT;
 
@@ -189,6 +186,9 @@ SPIKE_MATRIX = align_custom(spikes, shift, option, window / 2, ...
 clear option shift window;
 
 INFO.SPIKE_MATRIX = SPIKE_MATRIX;
+
+% cleanup
+clear CHAN_DATA WINDOW SPIKE_MATRIX
 %%
 % Environment is finished loading. Run your scripts either here, in the
 % command prompt, or in a dedicated framework (recommended).
