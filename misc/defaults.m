@@ -1,4 +1,4 @@
-function DEFAULTS = defaults
+function DEFAULTS = defaults()
 % DEFAULTS returns a struct containing default values.
 %
 % DEFAULTS = defaults
@@ -7,10 +7,10 @@ function DEFAULTS = defaults
 % spike sorting processing functions.
 %
 % Fields in the struct:
-%   WINDOW
-%   LO
-%   HI
-%   SHIFT
+%   WINDOW      Number of samples to extract froms spike. (Default: 32)
+%   LO          Left cutoff frequency in Hz. (Default: 300)
+%   HI          Right cutoff frequency in Hz. (Default: 3000)
+%   SHIFT       Maximum timesteps to shift spike for alignment. (Default: 10)
 %
 % INPUT:
 % NONE
