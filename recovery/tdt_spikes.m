@@ -1,7 +1,7 @@
 function [spike_matrix] = tdt_spikes(filtered, strm, snip, channel, window)
 % TDT_SPIKES extract spikes with symmetric window using timestamps.
 %
-% SPIKE_MATRIX = TDT_SPIKES(DATA, SNIP, CHANNEL, WINDOW)
+% SPIKE_MATRIX = TDT_SPIKES(FILTERED, STRM, SNIP, CHANNEL, WINDOW)
 %
 % This function is a wrapper encapsulating the spike detection and recovery
 % steps. It takes advantage of the work done by the TDT system to make
@@ -14,6 +14,7 @@ function [spike_matrix] = tdt_spikes(filtered, strm, snip, channel, window)
 % Please note the simplification made in the symmetric window.
 %
 % INPUT:
+% FILTERED      Matrix of filtered spikes.
 % STRM          Stream struct
 % SNIP          Snippet struct
 % CHANNEL       Channel number
