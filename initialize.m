@@ -188,7 +188,7 @@ clear option shift window;
 INFO.SPIKE_MATRIX = SPIKE_MATRIX;
 
 % cleanup
-clear CHAN_DATA WINDOW SPIKE_MATRIX
+clear STRM_STRUCT SNIP_STRUCT CHAN_DATA SPIKE_MATRIX
 %%
 % Environment is finished loading. Run your scripts either here, in the
 % command prompt, or in a dedicated framework (recommended).
