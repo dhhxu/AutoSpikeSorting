@@ -12,15 +12,14 @@ function [] = plotspikes(spikes, title, varargin)
 %
 % INPUT:
 % SPIKES    MxN numeric matrix where each row represents a spike waveform.
+% TITLE     String for the figure title. (Default: 'Figure')
 % ...       Additional arguments to plotting function. See plot() for
 %           information.
 %
 % OUTPUT:
 % NONE
 
-    if isempty(title)
-        error('Empty figure title string');
-    end
+    SetDefaultValue(2, 'title', 'Figure');
 
     opengl software;
 
