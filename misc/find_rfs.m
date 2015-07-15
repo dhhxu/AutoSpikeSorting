@@ -55,6 +55,7 @@ function [rf_blocks] = find_rfs(varargin)
     for i = 1:n
         [frq, lvl, fInd] = open_block(path, i);
         if isempty(frq) || isempty(lvl) || isempty(fInd)
+            rf_blocks{i} = [];
             warning('Skipping block %d', i);
             continue
         end
@@ -83,6 +84,18 @@ function [frq, lvl, fInd] = open_block(path, block_num)
         frq = data.epocs.Frq1.data;
         lvl = data.epocs.Lev1.data;
         fInd = data.epocs.FInd.data;
+        
+        if length(frq) ~= length(fInd) || length(frq) ~= length(lvl) ...
+           || length(lvl) ~= length(fInd)
+       
+            warning('Frq/Lvl/fInd vectors not same length in block %d', ...
+                    block_num);
+                
+            frq = [];
+            lvl = [];
+            fInd = [];            
+        end
+
     catch
         warning('Problem in opening block %d', block_num);
         frq = [];
