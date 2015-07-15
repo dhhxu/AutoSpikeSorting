@@ -21,7 +21,8 @@ function [option, shift, window] = prompt_align(spikes)
 % WINDOW    Positive integer of number of samples in a spike waveform. Ideally
 %           an even number. Even better if it's a power of 2.
     
-    plotspikes(spikes);
+    figurename = 'Alignment';
+    plotspikes(spikes, figurename);
 
     d = defaults();
 
@@ -62,20 +63,20 @@ function [option, shift, window] = prompt_align(spikes)
         end
         option = raw_option;
         
-        [shift, status] = str2num(raw_shift);
+        [shift, status] = str2double(raw_shift);
         if ~status || shift < 1 
             warning('Invalid shift option entered. Please try again.');
             def = {option, num2str(d.SHIFT), num2str(d.WINDOW)};
             continue;
         end
         
-        [window, status] = str2num(raw_win);
+        [window, status] = str2double(raw_win);
         if ~status || window < 1
             warning('Invalid window option entered. Please try again.');
             def = {option, shift, num2str(d.WINDOW)};
             continue;
         else
-            close('plotspikes');
+            close(figurename);
             return;
         end
     end

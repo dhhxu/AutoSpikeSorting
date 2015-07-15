@@ -1,11 +1,12 @@
-function [] = plotspikes(spikes, varargin)
-% PLOT_SPIKES Plots spikes on top of each other in the same plot.
+function [] = plotspikes(spikes, title, varargin)
+% PLOTSPIKES Plots spikes on top of each other in the same plot.
 %
-% PLOT_SPIKES(SPIKES, ...)
+% PLOTSPIKES(SPIKES, TITLE, ...)
 %
 % Plots the spikes in the SPIKES matrix on the same plot. This is to help
 % visualize the waveform shapes. Additional arguments may be passed into the
-% function.
+% function. The figure will have title TITLE to help distinguish between several
+% figures.
 %
 % See also PLOT
 %
@@ -17,9 +18,13 @@ function [] = plotspikes(spikes, varargin)
 % OUTPUT:
 % NONE
 
+    if isempty(title)
+        error('Empty figure title string');
+    end
+
     opengl software;
 
-    figure('Name', 'plotspikes');
+    figure('Name', title);
     hold on;
     for i = 1:size(spikes, 1);
         plot(spikes(i, :), varargin{1:end});
