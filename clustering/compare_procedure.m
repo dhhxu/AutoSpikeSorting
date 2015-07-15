@@ -19,7 +19,11 @@ function [results] = compare_procedure(procedures, info, channel, iter)
 % or interactively) and are stored as function handles in the 1D cell array
 % PROCEDURES.
 %
-% COMPARE_PROCEDURE will run 
+% COMPARE_PROCEDURE will run each procedure in PROCEDURES for ITER iterations
+% and return the median result. For best results, each procedure should not be
+% deterministic (e.g. ramdom initialization).
+%
+% This function will prompt the user to enter the number of clusters.
 % 
 % All procedures will have the following signature:
 %
@@ -35,6 +39,9 @@ function [results] = compare_procedure(procedures, info, channel, iter)
 % The function performs the following tasks:
 %   - Get channel from user if not specified
 %   - Get alignment options from user
+%
+% Limitations:
+%   No way to set ITER but not CHANNEL.
 %
 % INPUT:
 % PROCEDURES    1-D cell array of procedure function handles
@@ -78,10 +85,18 @@ function [results] = compare_procedure(procedures, info, channel, iter)
     if iter < 1
         error('Invalid iteration value');
     end
+    
+%% Prepare
+    % aligned spikes
+    spikes = prepare_spikes(info, channel);
+    
+    if isempty(spikes)
+        error('Align: A problem occured with user input');
+    end
 
 
 %% Clustering
-    % Start parallel pool
+    % Start parallel pool?
     
     nProcedures = length(procedures);
     for i = 1:nProcedures
@@ -93,12 +108,12 @@ function [results] = compare_procedure(procedures, info, channel, iter)
         end
         
         for j = 1:iter
-            class = h(info);
+            class = h(spikes, info);
         end
         
     end
     
-    % shutdown parallel pool
+    % shutdown parallel pool?
 
 end
 
