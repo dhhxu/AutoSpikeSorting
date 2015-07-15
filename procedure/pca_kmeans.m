@@ -1,4 +1,4 @@
-function class = pca_kmeans(data, k, info)
+function class = pca_kmeans(data, k)
 % PCA_KMEANS baseline clustering procedure against which novel procedures are
 % evaluated.
 %
