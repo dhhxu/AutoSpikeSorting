@@ -58,26 +58,6 @@ INFO.blocknum = block_num;
 
 clear strm snip tank_name block_num tmp;
 
-%% Step 4: Spike Alignment
-% Hitting 'cancel' will put erroneous values for option, shift, and window,
-% causing the script to abort. The variables will be saved, and the process can
-% be restarted by re-running this section.
-[option, shift, window] = prompt_align(spikes);
-
-if isempty(option) || ~shift || ~window
-    error('Invalid alignment options. Re-run Step 5 to restart.');
-else
-    fprintf('Aligning spikes on %s, max shift %d, window size %d\n', option, ...
-           shift, window);
-end
-
-SPIKE_MATRIX = align_custom(spikes, shift, option, window / 2, ...
-                            window / 2);
-
-
-
-clear option shift window;
-
 %% end
 
 fprintf('\ninitialize: end\n');
