@@ -28,6 +28,6 @@ function DEFAULTS = defaults()
     DEFAULTS.HI = 3000;
     
     % Maximum spike shift during alignment.
-    DEFAULTS.SHIFT = 10;
+    DEFAULTS.SHIFT = 5;
     
 end
