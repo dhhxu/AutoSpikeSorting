@@ -63,15 +63,15 @@ function [option, shift, window] = prompt_align(spikes)
         end
         option = raw_option;
         
-        [shift, status] = str2double(raw_shift);
-        if ~status || shift < 1 
+        shift = str2double(raw_shift);
+        if isnan(shift) || shift < 1 
             warning('Invalid shift option entered. Please try again.');
             def = {option, num2str(d.SHIFT), num2str(d.WINDOW)};
             continue;
         end
         
-        [window, status] = str2double(raw_win);
-        if ~status || window < 1
+        window = str2double(raw_win);
+        if isnan(window) || window < 1
             warning('Invalid window option entered. Please try again.');
             def = {option, shift, num2str(d.WINDOW)};
             continue;
