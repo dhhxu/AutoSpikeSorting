@@ -63,15 +63,15 @@ function [results] = cluster_block(info, procedure, kList)
             class = cluster_channel(chan, info, procedure, kList);
         end
         
-        if isempty(class)
-            warning('Invalid alignment options entered. Skipping channel: %d', ...
-                i);
-        else
-            results{i} = class; 
-        end
-        
+        results{i} = class;
         chan_end = toc(chan_start);
-        fprintf('Channel %d: elapsed time: %d s\n', i, chan_end);
+        if isempty(class)
+            warning('Invalid alignment options entered for channel: %d', i);
+        else
+            nSpikes = sum(info.snip.chan == i);
+            fprintf('Channel %d: %d spikes, elapsed time: %d s\n', i, ...
+                    nSpikes, chan_end);
+        end
     end
     
     finish = toc(start);
