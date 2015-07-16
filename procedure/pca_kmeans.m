@@ -1,42 +1,32 @@
 function class = pca_kmeans(data, k)
-% PCA_KMEANS baseline clustering procedure against which novel procedures are
-% evaluated.
+% PCA_KMEANS baseline clustering procedure to evaluate novel procedures
+% against.
 %
-% CLASS = PCA_KMEANS(DATA, K, INFO)
+% CLASS = PCA_KMEANS(DATA, K)
 %
-% Baseline K-means clustering using PCA for features. Takes in spike information
-% described in the INFO struct and outputs a CLASS vector of integer labels for
-% each spike.
-%
-% Filter: bandpass filter with elliptic passband (300-3000 Hz)
-% Detection: determined from TDT timestamps
-% Extraction: Symmetric window of 32 samples corresponding to ~2.6 ms
-% Features: First 3 PCA components
-% Clustering: k-means, K determined by evalclusters
+% INFORMATION:
+% Features:         First 3 principal components via PCA
+% Algorithm:        K-means
 %
 % INPUT:
-% DATA      matrix of aligned spikes. Rows are spikes
-% K         integer of number of clusters
-% INFO      Struct containing spike data
+% DATA      NxM matrix of spikes. Rows are spikes
+% K         integer of number of clusters to partition DATA into
 %
 % OUTPUT:
-% CLASS     1-D vector of integer class labels
+% CLASS     Nx1 vector of integer class labels.
+%
+% See also PCA
+
+%% Alignment
+    aligned = data;
 
 %% Features
 
-    features = pca_coeff(1, 3, data);
+    features = pca_coeff(1, 3, aligned);
 
 %% Clustering
-
-
-    if ~K
-        error('Invalid estimate entered');
-    end
     
-    MAX_ITER = 20;
-    for i = 1:MAX_ITER
-        class = kmeans(features, K);
-    end
+    class = kmeans(features, k);
     
 end
 
