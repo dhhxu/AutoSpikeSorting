@@ -25,7 +25,7 @@ window_half = 0; %#ok<NASGU>
 odd = true;
 
 if mod(samples, 2)
-    window_half = floor(samples, 2);
+    window_half = floor(samples / 2);
 else
     window_half = samples / 2;
     odd = false;
