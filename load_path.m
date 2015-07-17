@@ -17,13 +17,23 @@ function [] = load_path(root)
         error('Missing argument');
     end
     
-    fprintf('load_path: start...');
+    fprintf('%s: start\n', mfilename);
+    
+    % Suppress .git warning
+    warning('off', 'MATLAB:dispatcher:pathWarning');
 
     try
         addpath(genpath(root));
+
         % third-party scripts
         codePath = fullfile(root, 'code');
         addpath(genpath(codePath));
+        
+        % Superspiketrain scripts
+        sst_path = fullfile('U:', '3shared' , 'Matlab Scripts', ...
+                            'Superspiketrain');
+        addpath(genpath(sst_path));
+
     catch
         error('\nPath load failed.');
     end
@@ -35,5 +45,7 @@ function [] = load_path(root)
         error('\nFailed to remove .git directory');
     end
     
-    fprintf('done\n');
+    warning('on', 'MATLAB:dispatcher:pathWarning');
+    
+    fprintf('%s: done\n', mfilename);
 end
