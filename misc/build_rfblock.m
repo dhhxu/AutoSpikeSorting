@@ -38,7 +38,7 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
 %                   block   Nx1 vector of block numbers
 %                   chan    Nx1 vector of channel numbers
 %                   ts      Nx1 vector of waveform timestamps
-%                   sort    Nx1 vector of unit assignments (initially all zeros)
+%                   sortc   Nx1 vector of unit assignments (initially all zeros)
 %                   waves   Nx30 vector of snippet waveforms.
 %
 % See also FIND_RFS, TDT2MAT.
@@ -81,7 +81,7 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
         block = [];
         chan = [];
         ts = [];
-        sort = [];
+        sortc = [];
         waves = [];
         
         superblockwidth = width(i);
@@ -101,12 +101,12 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
             block = [block; j.*ones(N, 1)]; %#ok<*AGROW>
             chan = [chan; data.snips.CSPK.chan];
             ts = [ts; data.snips.CSPK.ts];
-            sort = [sort; zeros(N, 1)];
+            sortc = [sortc; zeros(N, 1)];
             waves = [waves; data.snips.CSPK.data];
 
         end % blocks in rf loop
         
-        superblocks{i} = table(block, chan, ts, sort, waves);
+        superblocks{i} = table(block, chan, ts, sortc, waves);
         
     end % rf super block loop
     
@@ -144,7 +144,7 @@ function status = user_confirm(rfindex)
 % Prompt user to confirm if auto-determined RFINDEX is correct. Returns True if
 % user approves, False otherwise.
 
-    prompt= {printRfIndex(rfindex)};
+    prompt = {printRFindex(rfindex)};
     name = 'Confirm RF indices';
         
     answer = inputdlg(prompt, name);
@@ -157,8 +157,8 @@ function status = user_confirm(rfindex)
     
 end
 
-function [] = printRFindex(rfindex)
-% Print formatted string of RF indices.
+function s = printRFindex(rfindex)
+% Return formatted string of RF indices.
 
     s = '';
     
@@ -166,5 +166,4 @@ function [] = printRFindex(rfindex)
         s = sprintf('%s%d, ', s, rfindex(i));
     end
     
-    fprintf('%s\n', s);
 end
