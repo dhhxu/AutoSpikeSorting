@@ -26,9 +26,9 @@ function [rf_blocks] = find_rfs(varargin)
 % RF_BLOCKS     1xN cell, where N is number of blocks. Each element is an 1-D
 %               integer vector of the parts within the corresponding block that
 %               contain receptive fields.
-%               If an error occurs, the value is zero.
+%               If an error occurs, an empty cell is returned.
 
-    rf_blocks = 0;
+    rf_blocks = cell();
 
     if ~exist('TDT2mat', 'file')
         error('TDT2mat required');
@@ -63,13 +63,6 @@ function [rf_blocks] = find_rfs(varargin)
         rf_blocks{i} = find_rfs_in_block(frq, lvl, fInd, CUTOFF);
     end
 
-end
-
-function [num_blocks] = block_count(path)
-% Returns the number of blocks in the tank located at PATH.
-    wildcard = fullfile(path, 'Block*');
-    matches = dir(wildcard);
-    num_blocks = length(matches);
 end
 
 function [frq, lvl, fInd] = open_block(path, block_num)
