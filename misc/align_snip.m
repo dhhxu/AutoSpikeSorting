@@ -19,6 +19,7 @@ function aligned = align_snip(snips, shift, thr, fft)
 %               'max'
 %               'min'
 % FFT       (Optional) boolean. If True, apply DFT after amplitude alignment
+%           (Default: False)
 %
 % OUTPUT:
 % ALIGNED   Matrix of aligned snippet spikes. Same dimensions as SNIPS. If FFT
