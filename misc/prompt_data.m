@@ -24,7 +24,7 @@ function [strm_struct, snip_struct, name, block_num] = prompt_data()
     name = '';
     block_num = 0;
 
-    path = uigetdir('U:');
+    path = uigetdir('U:/');
     
     if ~path
         warning('No tank/block selected. Returning empty results');
