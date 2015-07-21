@@ -1,8 +1,19 @@
-function [superblocks, rfblocks] = build_rfblock(path, rfindex)
+function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
 % BUILD_RFBLOCKS Joins receptive field blocks into one superblock for all RFs in
 % a tank.
 %
+% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH)
+%                           Join blocks containing same receptive fields into
+%                           superblocks. RF blocks are detected automatically.
+%                           User will be asked to confirm the detected blocks.
+%
 % [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, RFINDEX)
+%                           Override automatic RF detection with user-supplied
+%                           RF block indices.
+%
+% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, RFINDEX, SUPPRESS)
+%                           Suppress user confirmation dialog. RFINDEX is
+%                           ignored.
 %           
 % For an input tank, determine receptive field blocks and for each block
 % identified, merge it with succeeding non-receptive field blocks until another
@@ -13,24 +24,30 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
 % a "superblock" table created from a receptive field block and its ensuing
 % non-receptive field blocks. See the OUTPUT section below for more details.
 %
-% RFBLOCKS is a one dimensional cell array of the receptive field blocks
+% RFBLOCKS is a N by 1 array of the indices of receptive field blocks that are
 % automatically determined by the FIND_RFS function.
 %
 % The user will be asked to confirm the receptive field blocks that were
-% detected via a dialog. If the receptive field blocks are incorrect (i.e. user
-% selects 'cancel'), this function will terminate. The user can override the
-% automatic detection by entering an array RFINDEX of the indices corresponding
-% to receptive field blocks.
+% automatically detected via a dialog. If the receptive field blocks are
+% incorrect (i.e. user selects 'cancel'), this function will terminate.
+% The user can override the automatic detection by entering an array RFINDEX of
+% the indices corresponding to receptive field blocks.
+%
+% On the other hand, the confirmation dialog can be suppressed by passing True
+% to the optional SUPPRESS option. Default is False. RFINDEX will be ignored if
+% SUPPRESS is set.
 %
 % Limitations: this function assumes that a block will have at most one
-% receptive field. Support for multiple receptive fields in one block is not
-% implemented yet.
+% receptive field. Functionality for multiple receptive fields in one block is
+% not implemented yet.
 %
 % INPUT:
 % PATH          String of the absolute path to the tank
 % RFINDEX       (optional) array of user-defined receptive field block indices.
 %               If not specified, function automatically determines receptive
 %               fields.
+% SUPPRESS      (optional) boolean. If true, don't prompt for confirmation of 
+%               automatic RF detection results. (Default: False)
 %
 % OUTPUT:
 % SUPERBLOCKS   1 dimensional cell. Each element is a superblock table with the
@@ -44,6 +61,7 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
 % See also FIND_RFS, TDT2MAT.
 
     SetDefaultValue(2, 'rfindex', []);
+    SetDefaultValue(3, 'suppress', false);
     
     superblocks = cell();
     rfblocks = [];
@@ -58,12 +76,14 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
         rf_blocks = find_rfs(path);
         rfindex = rfblocks2index(rf_blocks);
         
-        % user confirm
-        if ~user_confirm(rfindex)
-            warning('User cancelled function operation');
-            return;
+        if ~suppress
+            % user confirm
+            if ~user_confirm(rfindex)
+                warning('User cancelled function operation');
+                return;
+            end
         end
-        
+
     else
         rfindex = unique(sort(rfindex));
         if ~isValidRFindex(rfindex, nBlocks)
@@ -113,8 +133,8 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex)
 end
 
 function [rfindex] = rfblocks2index(rf_blocks)
-% Convert rf_blocks cell array to regular array of RF block indices. Assumes
-% that at most one RF per block.
+% Convert RF_BLOCKS cell array to regular array of RF block indices. Assumes
+% that there is at most one RF per block.
 
     nBlocks = length(rf_blocks);
     rfindex = zeros(nBlocks, 1);
@@ -129,18 +149,19 @@ function [rfindex] = rfblocks2index(rf_blocks)
 end
 
 function [ok] = isValidRFindex(rfindex, nBlocks)
-% Returns True if RFINDEX is valid user specified RF block indices.
+% Returns True if RFINDEX is valid user-specified RF block indices.
 
-    ok = false;
+    ok = true;
     
     over = rfindex > nBlocks;
-    if ~sum(over)
-        ok = true;
+
+    if sum(over)
+        ok = false;
     end
 
 end
 
-function status = user_confirm(rfindex)
+function [status] = user_confirm(rfindex)
 % Prompt user to confirm if auto-determined RFINDEX is correct. Returns True if
 % user approves, False otherwise.
 
@@ -157,7 +178,7 @@ function status = user_confirm(rfindex)
     
 end
 
-function s = printRFindex(rfindex)
+function [s] = printRFindex(rfindex)
 % Return formatted string of RF indices.
 
     s = '';
