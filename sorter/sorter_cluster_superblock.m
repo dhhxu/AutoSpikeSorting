@@ -33,10 +33,8 @@ function [class] = sorter_cluster_superblock(superblocks, procedure, sst_path)
 
         for j = 1:nChannels
             rows = sb.chan == j;
-            sub_sb = sb(rows, :);
 
-            spikes = sub_sb.waves;
-            clear sub_sb;
+            spikes = sb.waves(rows);
 
             % User alignment
             [option, shift] = prompt_snip_align(spikes);
@@ -48,6 +46,18 @@ function [class] = sorter_cluster_superblock(superblocks, procedure, sst_path)
             K = preview_pca_clusters(aligned, 3);
 
             class = procedure(aligned, K);
+
+            clear aligned;
+
+            sub_sb = sb(rows, :);
+            sub_sb.sortc = class;
+
+            % sst stuff
+
+            for unit = 1:K
+
+                
+            end
 
         end
 
