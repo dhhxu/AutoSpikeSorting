@@ -41,14 +41,14 @@ function [opt, shift]= prompt_snip_align(snips, max_wav)
         error('max_wav must be positive');
     end
     
-    figurename = 'Snip Align';
+    FIGNAME = 'Snip Align';
     
     nSpikes = size(snips, 1);
     if nSpikes > max_wav
         chosen = randsample(nSpikes, max_wav);
-        plotspikes(snips(chosen, :), figurename);
+        plotspikes(snips(chosen, :), FIGNAME);
     else
-        plotspikes(snips, figurename);
+        plotspikes(snips, FIGNAME);
     end
     
     d = defaults();
@@ -62,11 +62,11 @@ function [opt, shift]= prompt_snip_align(snips, max_wav)
     
     numlines = 1;
     def = {'', num2str(d.SHIFT)};
-    title = figurename;
+    title = FIGNAME;
     
     answer = inputdlg(prompt, title, numlines, def, options);
     
-    [opt, shift] = parse_input(answer, figurename);
+    [opt, shift] = parse_input(answer, FIGNAME);
 
 end
 
