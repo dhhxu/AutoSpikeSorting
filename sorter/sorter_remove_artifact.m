@@ -62,4 +62,8 @@ function [real_idx] = filter_artifacts(spikes, threshold)
 
     real_idx = outliers & kept_idx2;
 
+    artifact_count = sum(~real_idx);
+    fprintf('Detected %d artifacts out of %d spikes\n', artifact_count, ...
+            nSpikes);
+
 end
