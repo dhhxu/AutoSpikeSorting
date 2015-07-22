@@ -21,6 +21,11 @@ load_path(pwd);
 %% Get tank path
 [TANK, PATH] = sorter_get_tank();
 
+tank_info.tank = TANK;
+tank_info.path = PATH;
+
+clear TANK PATH;
+
 %% Get SST save directory
 SST_PATH = sorter_get_sst_dir();
 
@@ -37,7 +42,7 @@ SST_PATH = sorter_get_sst_dir();
 [superblocks, ~] = build_rfblock(PATH);
 
 %% Cluster by channel, construct SST objects
-
+sorter_cluster_superblock(superblocks, procedure, tank_info, SST_PATH);
 
 %% Save clustering results on per-block basis
 
