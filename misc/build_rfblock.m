@@ -1,24 +1,31 @@
-function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
+function [superblocks, rfblocks] = build_rfblock(path, root, rfindex, suppress)
 % BUILD_RFBLOCKS Joins receptive field blocks into one superblock for all RFs in
 % a tank.
 %
-% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH)
+% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, ROOT)
 %                           Join blocks containing same receptive fields into
 %                           superblocks. RF blocks are detected automatically.
 %                           User will be asked to confirm the detected blocks.
 %
-% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, RFINDEX)
+% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, ROOT, RFINDEX)
 %                           Override automatic RF detection with user-supplied
 %                           RF block indices.
 %
-% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, RFINDEX, SUPPRESS)
+% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, ROOT, RFINDEX, SUPPRESS)
 %                           Suppress user confirmation dialog. RFINDEX is
 %                           ignored.
 %           
 % For an input tank, determine receptive field blocks and for each block
 % identified, merge it with succeeding non-receptive field blocks until another
 % receptive field block is found. Repeat this process for all receptive field
-% blocks. The tank is located at absolute path PATH.
+% blocks. The tank is located at absolute path PATH. Finally, the result is
+% saved to the parent directory of ROOT, which should be the root directory of
+% the project. The result is saved to a .mat file:
+%   <TANK_NAME>_superblocks.mat
+%
+% Note that if this function is invoked on the same tank again, it will load the
+% saved .mat file. Also, the saved file by construction is assumed to have
+% correct RF indices determined.
 %
 % SUPERBLOCKS is a one dimensional cell array. Each element contains
 % a "superblock" table created from a receptive field block and its ensuing
@@ -43,6 +50,8 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
 %
 % INPUT:
 % PATH          String of the absolute path to the tank
+% ROOT          String of the absolute path of the project root. Generally will
+%               be the value of 'pwd'
 % RFINDEX       (optional) array of user-defined receptive field block indices.
 %               If not specified, function automatically determines receptive
 %               fields.
@@ -57,18 +66,67 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
 %                   ts      Nx1 vector of waveform timestamps
 %                   sortc   Nx1 vector of unit assignments (initially all zeros)
 %                   waves   Nx30 vector of snippet waveforms.
+% RFBLOCKS      Mx1 integer array. Each element is the number of a block
+%               containing a RF.
 %
 % See also FIND_RFS, TDT2MAT.
 
-    SetDefaultValue(2, 'rfindex', []);
-    SetDefaultValue(3, 'suppress', false);
-    
-    superblocks = cell();
-    rfblocks = [];
-    
-    if ~exist(path, 'dir')
+    if ~exist(root, 'dir')
+        error('Invalid project root directory');
+    elseif ~exist(path, 'dir')
         error('Tank not found: %s', path);
     end
+    
+    parent = fileparts(root);
+
+    SetDefaultValue(3, 'rfindex', []);
+    SetDefaultValue(4, 'suppress', false);
+    
+    [superblocks, rfblocks] = get_superblock(path, parent, rfindex, suppress);
+    
+end
+
+function [superblocks, rfblocks] = get_superblock(path, loc, rfindex, ...
+                                                  suppress)
+% Helper function. If saved superblock .mat file for the tank does not exist,
+% creates one normally. Otherwise, it exists at directory whose path is LOC.
+
+    [~, tank_name, ~] = fileparts(path);
+    mat_name = sprintf('%s_superblocks.mat', tank_name);
+    mat_path = fullfile(loc, mat_name);
+    
+    % this function was previously called on tank
+    if exist(mat_path, 'file')
+        fprintf('superblock file found for tank %s\n', tank_name);
+        fprintf('Loading it...\n');
+        
+        tmp = load(mat_path);
+        superblocks = tmp.superblocks;
+        clear tmp;
+        
+        % construct rfblocks
+        nSuperBlocks = length(superblocks);
+        
+        rfblocks = zeros(nSuperBlocks, 1);
+        
+        for i = 1:nSuperBlocks
+            sb = superblocks{i};
+            
+            blocks = unique(sb.block);
+            rfblocks(i) = min(blocks);
+            
+            clear sb;
+        end
+        
+        return;
+
+    end
+    
+    fprintf('superblock file not found for tank %s\n', tank_name);
+    fprintf('Creating one...\n');
+    
+    superblocks = cell(0);
+    rfblocks = [];
     
     nBlocks = block_count(path);
     
@@ -95,7 +153,10 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
     superblocks = cell(nSuperblocks, 1);
     rfblocks = rfindex;
     
-    width = diff([rfindex (nBlocks + 1)]);  % account for last rf block
+    tmp = zeros(length(rfindex) + 1, 1);
+    tmp(1:(length(tmp) - 1)) = rfindex;
+    tmp(end) = nBlocks + 1;
+    width = diff(tmp);  % account for last rf block
     
     for i = 1:nSuperblocks
         block = [];
@@ -111,7 +172,7 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
             block_str = sprintf('Block-%d', j);
             
             try
-                data = TDT2mat(path, block_str, 'Type', 2, 'Verbose', false);
+                data = TDT2mat(path, block_str, 'Type', 3, 'Verbose', false);
             catch
                 warning('Problem opening block: %d', j);
             end
@@ -128,7 +189,12 @@ function [superblocks, rfblocks] = build_rfblock(path, rfindex, suppress)
         
         superblocks{i} = table(block, chan, ts, sortc, waves);
         
+        clear block chan ts sortc waves;
+        
     end % rf super block loop
+    
+    % save superblock to file
+    save(mat_path, 'superblocks');
     
 end
 
@@ -168,7 +234,7 @@ function [status] = user_confirm(rfindex)
     prompt = {printRFindex(rfindex)};
     name = 'Confirm RF indices';
         
-    answer = inputdlg(prompt, name);
+    answer = inputdlg(prompt, name, 0);
     
     if isempty(answer)
         status = false;
