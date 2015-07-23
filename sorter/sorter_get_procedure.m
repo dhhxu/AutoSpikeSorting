@@ -16,13 +16,15 @@ function [procedure_handle] = sorter_get_procedure(base_dir)
 
     SetDefaultValue(1, 'base_dir', '');
 
-    [proc_name, ~] = uigetfile('*.m', 'Select procedure');
+    [proc_name, ~, ~] = uigetfile('*.m', 'Select procedure', base_dir);
 
     if isequal(proc_name, 0)
         proc_name = '';
         warning('No procedure selected');
         return
     end
+    
+    [~, name, ~] = fileparts(proc_name);
 
-    eval(sprintf('procedure_handle = @%s;', proc_name));
+    eval(sprintf('procedure_handle = @%s;', name));
 end

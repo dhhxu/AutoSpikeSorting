@@ -16,7 +16,7 @@ function [tank, path] = sorter_get_tank(base_dir)
 % TANK          String of tank name
 % PATH          String of absolute tank path.
 
-    SetDefaultValue(1, 'base_dir', '');
+    SetDefaultValue(1, 'base_dir', 'U:/');
 
     path = uigetdir(base_dir);
     tank = '';

@@ -33,7 +33,7 @@ end
 function [real_idx] = filter_artifacts(spikes, threshold)
 % Helper function for sorter_remove_artifact
 
-    [~, score, ~, ~, ~] = pca(zscore(waves), 'NumComponents', 8, ...
+    [~, score, ~, ~, ~] = pca(zscore(spikes), 'NumComponents', 8, ...
                               'Centered', false);
 
     nSpikes = size(spikes, 1);
@@ -48,7 +48,6 @@ function [real_idx] = filter_artifacts(spikes, threshold)
 
     kept_idx2 = scoremag <= threshold;
 
-    wave_max_min = zeros(nSpikes, 1);
     wave_max_min = max(spikes, [], 2) - min(spikes, [], 2);
 
     outliers = kmeans(log10(wave_max_min), 2);

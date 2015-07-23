@@ -28,7 +28,7 @@ function [rf_blocks] = find_rfs(varargin)
 %               contain receptive fields.
 %               If an error occurs, an empty cell is returned.
 
-    rf_blocks = cell();
+    rf_blocks = cell(0);
 
     if ~exist('TDT2mat', 'file')
         error('TDT2mat required');
