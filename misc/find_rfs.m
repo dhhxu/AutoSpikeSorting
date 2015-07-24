@@ -23,10 +23,16 @@ function [rf_blocks] = find_rfs(varargin)
 % TANK_PATH     String of absolute path to a tank directory
 %
 % OUTPUT:
-% RF_BLOCKS     1xN cell, where N is number of blocks. Each element is an 1-D
+% RF_BLOCKS     1xN cell, where N is number of blocks. Each element is an 1xK
 %               integer vector of the parts within the corresponding block that
-%               contain receptive fields.
-%               If an error occurs, an empty cell is returned.
+%               contain receptive fields. The structure of the vector is as
+%               follows:
+%                   [Block Number, part A, ...]
+%               If the vector has only two elements, the entire block is a RF.
+%               If the vector has more than two elements, the rest are parts of
+%               the block that have a RF.
+%               If an error occurs or if the block is not a RF, the vector will
+%               have only one element: the block number.
 
     rf_blocks = cell(0);
 
@@ -44,7 +50,7 @@ function [rf_blocks] = find_rfs(varargin)
             error('Tank not found: %s', path);
         end
     else
-        path = uigetdir();
+        path = uigetdir('U:/');
         if ~path
             error('No tank selected');
         end
@@ -52,15 +58,19 @@ function [rf_blocks] = find_rfs(varargin)
     
     n = block_count(path);
     rf_blocks = cell(1, n);
+  
     for i = 1:n
+        rf_blocks{i} = i;
         [frq, lvl, fInd] = open_block(path, i);
+
         if isempty(frq) || isempty(lvl) || isempty(fInd)
-            rf_blocks{i} = [];
+            rf_blocks{i} = i;
             warning('Skipping block %d', i);
             continue
         end
 
-        rf_blocks{i} = find_rfs_in_block(frq, lvl, fInd, CUTOFF);
+        rf_blocks{i} = [i, find_rfs_in_block(frq, lvl, fInd, CUTOFF)];
+
     end
 
 end
@@ -100,6 +110,7 @@ end
 function [rf_parts] = find_rfs_in_block(frq, lvl, fInd, cutoff)
 % Returns a vector containing the indices of the parts within a given block that
 % contain receptive fields. Uses the simple metric.
+% If a block does not have any RFs, returns empty vector.
 
     parts = unique(fInd);
     rf_parts = zeros(1, length(parts));
@@ -115,6 +126,10 @@ function [rf_parts] = find_rfs_in_block(frq, lvl, fInd, cutoff)
     end
     
     rf_parts(rf_parts == 0) = [];
+    
+    if isempty(rf_parts)
+        rf_parts = [];
+    end
 end
 
 function [boolean] = isRFsimple(frq, lvl, cutoff)
