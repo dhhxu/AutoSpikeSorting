@@ -102,21 +102,8 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfindex, ...
         
         tmp = load(mat_path);
         superblocks = tmp.superblocks;
+        rfblocks = tmp.rfblocks;
         clear tmp;
-        
-        % construct rfblocks
-        nSuperBlocks = length(superblocks);
-        
-        rfblocks = zeros(nSuperBlocks, 1);
-        
-        for i = 1:nSuperBlocks
-            sb = superblocks{i};
-            
-            blocks = unique(sb.block);
-            rfblocks(i) = min(blocks);
-            
-            clear sb;
-        end
         
         return;
 
@@ -158,7 +145,7 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfindex, ...
     tmp(end) = nBlocks + 1;
     width = diff(tmp);  % account for last rf block
     
-    for i = 1:nSuperblocks
+    parfor i = 1:nSuperblocks
         block = [];
         chan = [];
         ts = [];
@@ -175,6 +162,7 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfindex, ...
                 data = TDT2mat(path, block_str, 'Type', 3, 'Verbose', false);
             catch
                 warning('Problem opening block: %d', j);
+                continue;
             end
 
             N = length(data.snips.CSPK.chan);
@@ -189,12 +177,12 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfindex, ...
         
         superblocks{i} = table(block, chan, ts, sortc, waves);
         
-        clear block chan ts sortc waves;
+%         clear block chan ts sortc waves;
         
     end % rf super block loop
     
     % save superblock to file
-    save(mat_path, 'superblocks');
+    save(mat_path, 'superblocks', 'rfblocks');
     
 end
 
