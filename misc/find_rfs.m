@@ -1,11 +1,11 @@
-function [rf_blocks] = find_rfs(varargin)
+function [rf_blocks, nParts] = find_rfs(varargin)
 % FIND_RFS Find the receptive field blocks in a tank.
 %
-% RF_BLOCKS = FIND_RFS() Opens a dialog prompting user to select the tank
-%             directory of interest.
+% [RF_BLOCKS, NPARTS] = FIND_RFS() Opens a dialog prompting user to select the
+%                       tank directory of interest.
 %
-% RF_BLOCKS = FIND_RFS(TANK_PATH) Finds the receptive field blocks in the tank
-%             located at absolute path TANK_PATH.
+% [RF_BLOCKS, NPARTS] = FIND_RFS(TANK_PATH) Finds the receptive field blocks in
+%                       the tank located at absolute path TANK_PATH.
 %
 % The main idea is to automatically determine which blocks in a tank are
 % receptive field blocks. The method is as follows: in a given block, there are
@@ -33,6 +33,7 @@ function [rf_blocks] = find_rfs(varargin)
 %               the block that have a RF.
 %               If an error occurs or if the block is not a RF, the vector will
 %               have only one element: the block number.
+% NPARTS        1xN integer array of the number of parts for each block
 
     rf_blocks = cell(0);
 
@@ -58,6 +59,7 @@ function [rf_blocks] = find_rfs(varargin)
     
     n = block_count(path);
     rf_blocks = cell(1, n);
+    nParts = zeros(1, n);
   
     for i = 1:n
         rf_blocks{i} = i;
@@ -70,7 +72,7 @@ function [rf_blocks] = find_rfs(varargin)
         end
 
         rf_blocks{i} = [i, find_rfs_in_block(frq, lvl, fInd, CUTOFF)];
-
+        nParts(i) = length(unique(fInd));
     end
 
 end
