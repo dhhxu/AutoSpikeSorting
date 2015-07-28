@@ -123,36 +123,40 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
         fprintf('Automatically detecting receptive fields...\n');
 
         rf_blocks = find_rfs(path);
-        rfs = rfblocks2index(rf_blocks);
+        
+        s = printRFindex(rf_blocks);
+        fprintf('%s\n', s);
+
+        rfblocks = rf_blocks;
+        return
         
         if ~suppress
             % user confirm
             fprintf('Waiting for user confirmation\n');
 
-            if ~user_confirm(rfs)
+            if ~user_confirm(rf_blocks)
                 warning('User cancelled function operation');
                 return;
             end
         end
+        
+        rfs_array = rfblocks2index(rf_blocks);
+        rfblocks = rf_blocks;
 
     else
         if ~isValidRFcell(rfs, nBlocks)
             error('Invalid user specified RF cell');
         end
         fprintf('Using user specified RF\n');
+        
+        rfs_array = rfblocks2index(rfs);
+        rfblocks = rfs;
     end
     
-    rfindex = rfblocks2index(rfs);
-    
-    nSuperblocks = length(rfindex);
+    nSuperblocks = length(rfs_array);
     superblocks = cell(nSuperblocks, 1);
-    rfblocks = rfs;
         
-    tmp = [rfindex, (nBlocks + 1)];
-    
-%     tmp = zeros(length(rfs) + 1, 1);
-%     tmp(1:(length(tmp) - 1)) = rfs;
-%     tmp(end) = nBlocks + 1;
+    tmp = [rfs_array; (nBlocks + 1)];
     width = diff(tmp);  % account for last rf block
     
     parfor i = 1:nSuperblocks
@@ -163,7 +167,7 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
         waves = [];
         
         superblockwidth = width(i);
-        ind = rfindex(i);
+        ind = rfs_array(i);
         
         for j = ind:(ind + superblockwidth - 1)
             block_str = sprintf('Block-%d', j);
@@ -278,10 +282,11 @@ function [s] = printRFindex(rfs)
             continue
         end
         
+        block_num = elem(1);
         parts = elem(2:end);
         
         if length(parts) == 1
-            s = sprintf('%s%d, ', s, parts(1));
+            s = sprintf('%s%d, ', s, block_num);
         else
             str = sprintf('%d(', i);
 
