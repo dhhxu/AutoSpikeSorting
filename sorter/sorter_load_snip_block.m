@@ -89,7 +89,6 @@ function [data] = load_block(tank_path, block, parent, sav)
     mat_path = fullfile(parent, mat_name);
 
     if ~exist(mat_path, 'file')
-        fprintf('.mat file not found for: %s\nCreating one...\n', mat_name);
 
         try
             block_str = sprintf('Block-%d', block);
@@ -100,6 +99,7 @@ function [data] = load_block(tank_path, block, parent, sav)
         end
 
         if sav
+            fprintf('.mat file not found for: %s\nCreating one...\n', mat_name);
             save(mat_path, '-struct', 'data', '-v7.3');
         end
 
