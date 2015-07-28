@@ -1,4 +1,28 @@
 function [agg] = agglomerate_blocks(path)
+% AGGLOMERATE_BLOCKS Join a tank's blocks into one giant table structure.
+%
+% AGG = AGGLOMERATE_BLOCKS(PATH)
+%
+% Given a tank located at path PATH, join the block information together into
+% one giant table AGG.
+%
+% Note: the output AGG is a very large table and is not saved to file, as it is
+% intended to be an intermediate variable. Most likely PARTITION_RFS will
+% save its output to a file.
+%
+% INPUT:
+% PATH  String of absolute path to tank
+%
+% OUTPUT:
+% AGG   Table of joined block data with the following fields:
+%           block   integer, block number
+%           chan    integer, channel number
+%           ts      double, timestamp
+%           sortc   integer, sort code (intially all 0 meaning unsorted)
+%           waves   1x30 double vector, describes a waveform
+%           part    integer, file index
+%
+% See also PARTITION_RFS
 
     if ~exist(path, 'dir')
         error('Tank not found: %s', path);
@@ -7,7 +31,6 @@ function [agg] = agglomerate_blocks(path)
     agg = agg_core(path);
     toc;
 end
-
 
 function [agg] = agg_core(path)
 
@@ -20,7 +43,7 @@ function [agg] = agg_core(path)
     waves = [];
     part = [];
     
-    for i = 1:nBlocks
+    parfor i = 1:nBlocks
         try
             block_str = sprintf('Block-%d', i);
             data = TDT2mat(path, block_str, 'Type', [2, 3], 'Verbose', false);
@@ -28,7 +51,6 @@ function [agg] = agg_core(path)
             warning('Problem in opening block %d\n', i);
             continue
         end
-        
         snip = data.snips.CSPK;
         epoc = data.epocs;
         
