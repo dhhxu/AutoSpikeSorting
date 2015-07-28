@@ -44,7 +44,7 @@ function [superblocks] = partition_rfs(agglomerated, rfs)
 
     nSuperblocks = size(rf_info, 1);
     
-    superblocks = cell(1, nSuperblocks);
+    superblocks = cell(nSuperblocks, 1);
     
     agg = agglomerated;
     
