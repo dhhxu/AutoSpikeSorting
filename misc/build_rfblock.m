@@ -124,12 +124,6 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
 
         rf_blocks = find_rfs(path);
         
-        s = printRFindex(rf_blocks);
-        fprintf('%s\n', s);
-
-        rfblocks = rf_blocks;
-        return
-        
         if ~suppress
             % user confirm
             fprintf('Waiting for user confirmation\n');
@@ -159,7 +153,7 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
     tmp = [rfs_array; (nBlocks + 1)];
     width = diff(tmp);  % account for last rf block
     
-    parfor i = 1:nSuperblocks
+    for i = 1:nSuperblocks
         block = [];
         chan = [];
         ts = [];
@@ -173,25 +167,26 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
             block_str = sprintf('Block-%d', j);
             
             try
-                data = TDT2mat(path, block_str, 'Type', 3, 'Verbose', false);
+                data = TDT2mat(path, block_str, 'Type', [2, 3], ...
+                               'Verbose', false);
             catch
                 warning('Problem opening block: %d', j);
                 continue;
             end
+            
+            snip = data.snips.CSPK;
 
-            N = length(data.snips.CSPK.chan);
+            N = length(snip.chan);
             
             block = [block; j.*ones(N, 1)]; %#ok<*AGROW>
-            chan = [chan; data.snips.CSPK.chan];
-            ts = [ts; data.snips.CSPK.ts];
+            chan = [chan; snip.chan];
+            ts = [ts; snip.ts];
             sortc = [sortc; zeros(N, 1)];
-            waves = [waves; data.snips.CSPK.data];
+            waves = [waves; snip.data];
 
         end % blocks in rf loop
         
         superblocks{i} = table(block, chan, ts, sortc, waves);
-        
-%         clear block chan ts sortc waves;
         
     end % rf super block loop
     
