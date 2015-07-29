@@ -1,65 +1,56 @@
-function [superblocks, rfblocks] = build_rfblock(path, root, rfs, suppress)
+function [superblocks, rfs] = build_rfblock(path, save_dir, rfs_user)
 % BUILD_RFBLOCKS Joins receptive field blocks into one superblock for all RFs in
 % a tank.
 %
-% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, ROOT)
-%                           Join blocks containing same receptive fields into
-%                           superblocks. RF blocks are detected automatically.
-%                           User will be asked to confirm the detected blocks.
+% [SUPERBLOCKS, RFS] = BUILD_RFBLOCK(PATH, SAVE_DIR)
+%                      Join blocks containing same receptive fields into
+%                      superblocks. RF blocks are detected automatically.
+%                      User will be asked to confirm the detected blocks.
 %
-% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, ROOT, RFS)
-%                           Override automatic RF detection with user-supplied
-%                           RF block indices.
-%
-% [SUPERBLOCKS, RFBLOCKS] = BUILD_RFBLOCK(PATH, ROOT, RFS, SUPPRESS)
-%                           Suppress user confirmation dialog. RFINDEX is
-%                           ignored.
+% [SUPERBLOCKS, RFS] = BUILD_RFBLOCK(PATH, SAVE_DIR, RFS_USER)
+%                      Override automatic RF detection with user-supplied
+%                      RF block indices.
 %           
-% For an input tank, determine receptive field blocks and for each block
+% For an input tank, determine receptive field sections and for each section
 % identified, merge it with succeeding non-receptive field blocks until another
-% receptive field block is found. Repeat this process for all receptive field
-% blocks. The tank is located at absolute path PATH. Finally, the result is
-% saved to the parent directory of ROOT, which should be the root directory of
-% the project. The result is saved to a .mat file:
+% receptive field section is found. Repeat this process for all receptive field
+% sections. Note this means this function can handle two cases: a) the simple
+% case where each block has at most one RF, and b) the harder case where some
+% blocks have more than one RF. Be aware that the harder case requires more time
+% to run.
+%
+% The tank is located at absolute path PATH. Finally, the result is
+% saved to the SAVE_DIR directory. The result is saved to a .mat file:
+%
 %   <TANK_NAME>_superblocks.mat
 %
 % Note that if this function is invoked on the same tank again, it will load the
-% saved .mat file. Also, the saved file by construction is assumed to have
-% correct RF indices determined.
+% saved .mat file, if that file is in SAVE_DIR. Also, the saved file by
+% construction has a 'rfs' field that contains correct RF information.
 %
 % SUPERBLOCKS is a one dimensional cell array. Each element contains
-% a "superblock" table created from a receptive field block and its ensuing
-% non-receptive field blocks. See the OUTPUT section below for more details.
+% a "superblock" table created from a receptive field section and its ensuing
+% non-receptive field sections. See the OUTPUT section below for more details.
 %
-% RFBLOCKS is a N by 1 cell of the indices of receptive field blocks that are
-% automatically determined by the FIND_RFS function.
-%
-% The user will be asked to confirm the receptive field blocks that were
-% automatically detected via a dialog. If the receptive field blocks are
-% incorrect (i.e. user selects 'cancel'), this function will terminate.
-% The user can override the automatic detection by entering a cell array RFS of
-% the indices corresponding to receptive field blocks.
-%
-% On the other hand, the confirmation dialog can be suppressed by passing True
-% to the optional SUPPRESS option. Default is False. RFS will be ignored if
-% SUPPRESS is set.
-%
-% TODO: implement multiple RF/block
+% When this script is called, the user will be asked if he/she wants RFs to be
+% detected automatically. This will only happen if the RFS parameter is not
+% included or is an empty array. Otherwise, the user has supplied an input to
+% the RFS parameter. If it is invalid, the function will terminate and the
+% output SUPERBLOCKS will be an empty cell.
 %
 % INPUT:
 % PATH          String of the absolute path to the tank
 % ROOT          String of the absolute path of the project root. Generally will
 %               be the value of 'pwd'
-% RFS           (optional) 1xN cell structure. Each element is an 1xK vector in
+% RFS_USER      (optional) 1xN cell structure. Each element is an 1xK vector in
 %               the following format:
 %                   [Block number, part A, ...]
 %               If a block is a single RF, use [Block number, 1]
 %               If a block has multiple RFs, use [Block number, part A, part
 %               B...]. The part numbers must be unique, positive, and increasing
 %               order.
+%               N is the number of blocks in the tank.
 %               If a block is not a RF, use [Block number] (scalar)
-% SUPPRESS      (optional) boolean. If true, don't prompt for confirmation of 
-%               automatic RF detection results. (Default: False)
 %
 % OUTPUT:
 % SUPERBLOCKS   1 dimensional cell. Each element is a superblock table with the
@@ -68,34 +59,34 @@ function [superblocks, rfblocks] = build_rfblock(path, root, rfs, suppress)
 %                   chan    Nx1 vector of channel numbers
 %                   ts      Nx1 vector of waveform timestamps
 %                   sortc   Nx1 vector of unit assignments (initially all zeros)
-%                   waves   Nx30 vector of snippet waveforms.
-% RFBLOCKS      1xN cell that is the output of either FIND_RFS or the same
+%                   waves   Nx30 vector of snippet waveforms
+%                   part    Nx1 vector of part numbers
+% RFS           1xN cell that is the output of either FIND_RFS or the same
 %               as the user override, if valid.
 %
 % See also FIND_RFS, TDT2MAT.
 
-    if ~exist(root, 'dir')
-        error('Invalid project root directory');
+    if ~exist(save_dir, 'dir')
+        error('Invalid save directory');
     elseif ~exist(path, 'dir')
         error('Tank not found: %s', path);
     end
-    
-    parent = fileparts(root);
 
-    SetDefaultValue(3, 'rfs', cell(0));
+    SetDefaultValue(3, 'rfs_user', cell(0));
     SetDefaultValue(4, 'suppress', false);
     
-    [superblocks, rfblocks] = get_superblock(path, parent, rfs, suppress);
+    [superblocks, rfs] = get_superblock(path, save_dir, rfs_user);
     
 end
 
-function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
+function [superblocks, rfs] = get_superblock(path, save_dir, rfs_user)
 % Helper function. If saved superblock .mat file for the tank does not exist,
-% creates one normally. Otherwise, it exists at directory whose path is LOC.
+% creates one normally. Otherwise, it exists at directory whose path is
+% SAVE_DIR.
 
     [~, tank_name, ~] = fileparts(path);
     mat_name = sprintf('%s_superblocks.mat', tank_name);
-    mat_path = fullfile(loc, mat_name);
+    mat_path = fullfile(save_dir, mat_name);
     
     % this function was previously called on tank
     if exist(mat_path, 'file')
@@ -104,95 +95,54 @@ function [superblocks, rfblocks] = get_superblock(path, loc, rfs, suppress)
         
         tmp = load(mat_path);
         superblocks = tmp.superblocks;
-        rfblocks = tmp.rfblocks;
+        rfs = tmp.rfs;
         clear tmp;
         
         return;
 
     end
-    
+       
     fprintf('superblock file not found for tank %s\n', tank_name);
-    fprintf('Creating one...\n');
-    
+
     superblocks = cell(0);
-    rfblocks = cell(0);
-    
-    nBlocks = block_count(path);
-    
-    if isempty(rfs)
-        fprintf('Automatically detecting receptive fields...\n');
+    rfs = cell(0);
 
-        rf_blocks = find_rfs(path);
-        
-        if ~suppress
-            % user confirm
-            fprintf('Waiting for user confirmation\n');
-
-            if ~user_confirm(rf_blocks)
-                warning('User cancelled function operation');
-                return;
-            end
+    if isempty(rfs_user)
+        if ~user_confirm_auto()
+            fprintf('User declined automatic RF detection. Exiting.\n');
+            return
         end
-        
-        rfs_array = rfblocks2index(rf_blocks);
-        rfblocks = rf_blocks;
+
+        fprintf('Automatically detecting receptive fields...\n');
+        rfs = find_rfs(path);
 
     else
-        if ~isValidRFcell(rfs, nBlocks)
-            error('Invalid user specified RF cell');
-        end
-        fprintf('Using user specified RF\n');
+        nBlocks = block_count(path);
         
-        rfs_array = rfblocks2index(rfs);
-        rfblocks = rfs;
+        if ~isValidRFcell(rfs_user, nBlocks)
+            fprintf('Invalid user specified RF cell.\n');
+            return
+        end
+
+        fprintf('Using user specified RF\n');    
+        rfs = rfs_user;
+
     end
     
-    nSuperblocks = length(rfs_array);
-    superblocks = cell(nSuperblocks, 1);
-        
-    tmp = [rfs_array; (nBlocks + 1)];
-    width = diff(tmp);  % account for last rf block
+    fprintf('Detected RFs: %s\n', printRFindex(rfs));
     
-    for i = 1:nSuperblocks
-        block = [];
-        chan = [];
-        ts = [];
-        sortc = [];
-        waves = [];
-        
-        superblockwidth = width(i);
-        ind = rfs_array(i);
-        
-        for j = ind:(ind + superblockwidth - 1)
-            block_str = sprintf('Block-%d', j);
-            
-            try
-                data = TDT2mat(path, block_str, 'Type', [2, 3], ...
-                               'Verbose', false);
-            catch
-                warning('Problem opening block: %d', j);
-                continue;
-            end
-            
-            snip = data.snips.CSPK;
-
-            N = length(snip.chan);
-            
-            block = [block; j.*ones(N, 1)]; %#ok<*AGROW>
-            chan = [chan; snip.chan];
-            ts = [ts; snip.ts];
-            sortc = [sortc; zeros(N, 1)];
-            waves = [waves; snip.data];
-
-        end % blocks in rf loop
-        
-        superblocks{i} = table(block, chan, ts, sortc, waves);
-        
-    end % rf super block loop
+    if has_multiple_rfs(rfs)
+        fprintf('Detected multiple RFs per block.\n');
+        superblocks = handle_multi_rf(path, rfs);
+    else
+        fprintf('Detected at most one RF per block.\n');
+        superblocks = handle_single_rf(path, rfs);
+    end
     
     % save superblock to file
-    save(mat_path, 'superblocks', 'rfblocks');
-    
+    save(mat_path, 'superblocks', 'rfs');
+    fprintf('Superblock saved to %s\n', mat_path);
+
 end
 
 function [rfindex] = rfblocks2index(rf_blocks)
@@ -213,18 +163,26 @@ end
 
 function [ok] = isValidRFcell(rf_block, nBlocks)
 % Returns True if RF_BLOCK is valid user-specified RF block indices.
+%
+% Requirements:
+% 1 Must have an entry for each block.
+% 2 Block entries must be in order.
+% 3 If a block has 1 RF, its entry must be [block, 1]
+% 4 If a block has multiple RFs, its entry must be [block, part a, part b, ...].
+%   Also, the following parts must be in order and positive integers.
+% 5 If a block has no RFs, its entry must be [block]
 
-    ok = true;
+    ok = false;
     
-    if length(rf_block) > nBlocks
-        ok = false;
+    if length(rf_block) ~= nBlocks
+        return
     end
     
-    for i = 1:length(rf_block)
+    for i = 1:nBlocks
         elem = rf_block{i};
         
         if isempty(elem) || elem(1) ~= i
-            ok = false;
+            return
         elseif length(elem) == 1
             continue
         end
@@ -233,27 +191,31 @@ function [ok] = isValidRFcell(rf_block, nBlocks)
         
         if length(parts) == 1
             if parts(1) ~= 1
-                ok = false;
+                return
             end
         else
-            if length(unique(parts)) ~= length(parts)
-                ok = false;
-            elseif ~all(parts > 0)
-                ok = false;
-            elseif ~all(diff(parts) > 0)
-                ok = false;
+            if length(unique(parts)) ~= length(parts) || ...
+                ~all(parts > 0) || ...
+                ~all(diff(parts) > 0)
+                
+                return
+  
             end
         end
     end
+    
+    ok = true;
 
 end
 
-function [status] = user_confirm(rfs)
-% Prompt user to confirm if auto-determined RFS is correct. Returns True if
-% user approves, False otherwise.
+function [status] = user_confirm_auto()
+% Ask user if automatic RF detection is desired. If yes, status is True.
+% Otherwise, status is False.
+% Use only when the RFS input to BUILD_RFBLOCK is empty, since if it is
+% non-empty, it is assumed that the user is manually providing RF information.
 
-    prompt = {printRFindex(rfs)};
-    name = 'Confirm RF indices';
+    prompt = {'Perform automatic RF detection?'};
+    name = 'RF detection';
         
     answer = inputdlg(prompt, name, 0);
     
@@ -286,7 +248,7 @@ function [s] = printRFindex(rfs)
             str = sprintf('%d(', i);
 
             for j = 1:(length(parts) - 1)
-                str = sprintf('%s%d, ', str, j);
+                str = sprintf('%s%d, ', str, parts(j));
             end
             
             str = sprintf('%s%d)', str, parts(end));
@@ -296,5 +258,109 @@ function [s] = printRFindex(rfs)
     end
     
     s((end - 1):end) = '';
+
+end
+
+function [superblocks] = handle_multi_rf(path, rfs)
+% Special case handling for tanks whose blocks have multiple RFs. RFS is the
+% same cell array that either was automatically detected or user-supplied.
+
+    % takes a while
+    agg = agglomerate_blocks(path);
+
+    superblocks = partition_rfs(agg, rfs);
+
+end
+
+function [superblocks] = handle_single_rf(path, rfs)
+% Handle simple case where each block has at most one RF.
+
+    rfs_array = rfblocks2index(rfs);
+
+    nSuperblocks = length(rfs_array);
+    superblocks = cell(nSuperblocks, 1);
+    
+    nBlocks = block_count(path);
+        
+    tmp = [rfs_array; (nBlocks + 1)];
+    width = diff(tmp);  % account for last rf block
+    
+    for i = 1:nSuperblocks
+        block = [];
+        chan = [];
+        ts = [];
+        sortc = [];
+        waves = [];
+        part = [];
+        
+        superblockwidth = width(i);
+        ind = rfs_array(i);
+        
+        for j = ind:(ind + superblockwidth - 1)
+            block_str = sprintf('Block-%d', j);
+            
+            try
+                data = TDT2mat(path, block_str, 'Type', [2, 3], ...
+                               'Verbose', false);
+            catch
+                warning('Problem opening block: %d', j);
+                continue;
+            end
+            
+            snip = data.snips.CSPK;
+            epoc = data.epocs;
+
+            N = length(snip.chan);
+            
+            block = [block; j.*ones(N, 1)]; %#ok<*AGROW>
+            chan = [chan; snip.chan];
+            ts = [ts; snip.ts];
+            sortc = [sortc; zeros(N, 1)];
+            waves = [waves; snip.data];
+            
+            all_parts = epoc.FInd.data;
+            part_list = unique(all_parts);
+            nParts = length(part_list);
+            parts = zeros(N, 1);
+            
+            for k = 1:nParts
+                part_num = part_list(k);
+                part_idx = find(all_parts == part_num);
+
+                start_ts = epoc.FInd.onset(part_idx(1));
+                end_ts = epoc.FInd.offset(part_idx(end));
+
+                parts(snip.ts >= start_ts & snip.ts <= end_ts) = part_num;
+            end
+
+            part = [part; parts];
+
+        end % blocks in rf loop
+        
+        % remove zero parts
+        tmp = table(block, chan, ts, sortc, waves, part);
+        tmp(tmp.part == 0, :) = [];
+        superblocks{i} = tmp;
+        
+        clear tmp
+
+    end % rf super block loop
+
+end
+
+function [status] = has_multiple_rfs(rfs)
+% Return True if RFS has a block with multiple RFs.
+% RFS is a 1-D cell of block RF information.
+    
+    status = false;
+    
+    for i = 1:length(rfs)
+        elem = rfs{i};
+        
+        if length(elem) > 2
+            status = true;
+            return
+        end
+    end
 
 end
