@@ -21,28 +21,31 @@ load_path(pwd);
 %% Get tank path
 [TANK, PATH] = sorter_get_tank();
 
+if isempty(TANK) || isempty(PATH)
+    return;
+end
+
 tank_info.tank = TANK;
 tank_info.path = PATH;
 
 clear TANK PATH;
 
-%% Get SST save directory
-SST_PATH = sorter_get_sst_dir();
+%% Get data save directory
+DATA_PATH = sorter_get_dir();
+
+if isempty(DATA_PATH)
+    return
+end
 
 %% Get sorting procedure
-[procedure] = sorter_get_procedure();
-
-%% Detect RFs
-% rf_blocks = find_rfs(PATH);     % cell structure
-
-%% Check detected RFs
-
+PROC = sorter_get_procedure();
 
 %% Get RF super blocks
-[superblocks, ~] = build_rfblock(PATH);
-
+tic
+[superblocks, rf_idx] = build_rfblock(tank_info.path, DATA_PATH);
+toc
 %% Cluster by channel, construct SST objects
-sorter_cluster_superblock(superblocks, procedure, tank_info, SST_PATH);
+sorter_cluster_superblock(superblocks, PROC, tank_info, SST_PATH);
 
 %% Save clustering results on per-block basis
 
