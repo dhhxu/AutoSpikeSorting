@@ -43,7 +43,7 @@ function [agg] = agg_core(path)
     waves = [];
     part = [];
     
-    parfor i = 1:nBlocks
+    for i = 1:nBlocks
         try
             block_str = sprintf('Block-%d', i);
             data = TDT2mat(path, block_str, 'Type', [2, 3], 'Verbose', false);
@@ -61,24 +61,19 @@ function [agg] = agg_core(path)
         
         nPoints = length(snip.chan);
         parts = zeros(nPoints, 1);
-        
-        if nParts == 1
-            parts(1:end) = part_list;
-        else            
-            for j = 1:nParts
-                part_num = part_list(j);
-                
-                part_idx = find(all_parts == part_num);
-                
-                start_ts = epoc.FInd.onset(part_idx(1));
-                end_ts = epoc.FInd.offset(part_idx(end));
-                
-                parts(snip.ts >= start_ts & snip.ts <= end_ts) = part_num;
-                
-            end % part loop
-            
-        end
-        
+                 
+        for j = 1:nParts
+            part_num = part_list(j);
+
+            part_idx = find(all_parts == part_num);
+
+            start_ts = epoc.FInd.onset(part_idx(1));
+            end_ts = epoc.FInd.offset(part_idx(end));
+
+            parts(snip.ts >= start_ts & snip.ts <= end_ts) = part_num;
+
+        end % part loop
+
         block = [block; i.*ones(nPoints, 1)];
         chan = [chan; snip.chan];
         ts = [ts; snip.ts];
