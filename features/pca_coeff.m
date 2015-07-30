@@ -20,6 +20,6 @@ function [coefficients] = pca_coeff(cutoff, max_coeff, varargin)
 
     pca_info = pca_apply(varargin{1:end});
     nCoeff = pca_limit(pca_info.latent, cutoff, max_coeff);
-    fprintf('number of coefficients selected: %d\n', nCoeff);
+%     fprintf('number of coefficients selected: %d\n', nCoeff);
     coefficients = pca_info.score(:, 1:nCoeff);
 end
