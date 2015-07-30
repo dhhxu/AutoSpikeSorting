@@ -1,15 +1,15 @@
-function [superblocks, rfs] = build_rfblock(path, save_dir, rfs_user)
+function [superblocks, rfs, mrf] = build_rfblock(path, save_dir, rfs_user)
 % BUILD_RFBLOCKS Joins receptive field blocks into one superblock for all RFs in
 % a tank.
 %
-% [SUPERBLOCKS, RFS] = BUILD_RFBLOCK(PATH, SAVE_DIR)
-%                      Join blocks containing same receptive fields into
-%                      superblocks. RF blocks are detected automatically.
-%                      User will be asked to confirm the detected blocks.
+% [SUPERBLOCKS, RFS, MRF] = BUILD_RFBLOCK(PATH, SAVE_DIR)
+%                           Join blocks containing same receptive fields into
+%                           superblocks. RF blocks are detected automatically.
+%                           User will be asked to confirm the detected blocks.
 %
-% [SUPERBLOCKS, RFS] = BUILD_RFBLOCK(PATH, SAVE_DIR, RFS_USER)
-%                      Override automatic RF detection with user-supplied
-%                      RF block indices.
+% [SUPERBLOCKS, RFS, MRF] = BUILD_RFBLOCK(PATH, SAVE_DIR, RFS_USER)
+%                           Override automatic RF detection with user-supplied
+%                           RF block indices.
 %           
 % For an input tank, determine receptive field sections and for each section
 % identified, merge it with succeeding non-receptive field blocks until another
@@ -63,6 +63,7 @@ function [superblocks, rfs] = build_rfblock(path, save_dir, rfs_user)
 %                   part    Nx1 vector of part numbers
 % RFS           1xN cell that is the output of either FIND_RFS or the same
 %               as the user override, if valid.
+% MRF           boolean. True if RFS has blocks that have multiple RFs.
 %
 % See also FIND_RFS, TDT2MAT.
 
@@ -75,11 +76,11 @@ function [superblocks, rfs] = build_rfblock(path, save_dir, rfs_user)
     SetDefaultValue(3, 'rfs_user', cell(0));
     SetDefaultValue(4, 'suppress', false);
     
-    [superblocks, rfs] = get_superblock(path, save_dir, rfs_user);
+    [superblocks, rfs, mrf] = get_superblock(path, save_dir, rfs_user);
     
 end
 
-function [superblocks, rfs] = get_superblock(path, save_dir, rfs_user)
+function [superblocks, rfs, mrf] = get_superblock(path, save_dir, rfs_user)
 % Helper function. If saved superblock .mat file for the tank does not exist,
 % creates one normally. Otherwise, it exists at directory whose path is
 % SAVE_DIR.
@@ -96,6 +97,7 @@ function [superblocks, rfs] = get_superblock(path, save_dir, rfs_user)
         tmp = load(mat_path);
         superblocks = tmp.superblocks;
         rfs = tmp.rfs;
+        mrf = has_multiple_rfs(rfs);
         clear tmp;
         
         return;
@@ -131,7 +133,9 @@ function [superblocks, rfs] = get_superblock(path, save_dir, rfs_user)
     
     fprintf('Detected RFs: %s\n', printRFindex(rfs));
     
-    if has_multiple_rfs(rfs)
+    mrf = has_multiple_rfs(rfs);
+    
+    if mrf
         fprintf('Detected multiple RFs per block.\n');
         superblocks = handle_multi_rf(path, rfs);
     else
