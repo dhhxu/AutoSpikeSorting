@@ -44,8 +44,15 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
 %       <pie>   Pie chart of unit proportions 
 %       <units> Side-by-side comparision of different units
 %
-% The format of the metadata struct is:
-%   metadata.mat
+% The metadata file will be stored as metadata.mat and will be located in the
+% Figures directory. On a repeat sort, only old files will be renamed based on
+% naming conventions. This means that the newest file will still be called
+% metadata.mat. It is only on a repeat sort that this previously newest file
+% will be renamed as per convention.
+% The fields of the struct are:
+%   feature     handle of the feature function
+%   algo        handle of the algorithm function
+%   iter        run count
 %
 % This function is interactive. The user must provide spike alignment options 
 % and the number of clusters.
@@ -101,6 +108,20 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
         mkdir(fig_dir);
     end
 
+    iter_count = run_count(fig_dir);
+    
+    if iter_count > 0
+        % With this, we assume that Figures and SST_obj directories will be
+        % empty and that metadata.mat doesn't exist in Figures.
+        move_old_files(fig_dir, sst_dir);
+    end
+    
+    % create metadata file.
+    metadata.feature = feature;
+    metadata.algo = algo;
+    metadata.iter = iter_count; %#ok<STRNU>
+    save(fullfile(fig_dir, 'metadata.mat'), 'metadata');
+
     nSuperblocks = length(superblocks);
     nChannels = length(unique(superblocks{1}.chan));
     
@@ -110,6 +131,15 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
     seed = rng(12281990, 'twister');
 
     for i = 1:nSuperblocks
+        sb_sst_dir = fullfile(sst_dir, sprintf('superblock-%d', i));
+        sb_fig_dir = fullfile(fig_dir, sprintf('superblock-%d', i));
+        
+        if ~exist(sb_sst_dir, 'dir')
+            % old files already moved; for safety.
+            mkdir(sb_sst_dir);
+            mkdir(sb_fig_dir);
+        end
+        
         rng(seed);
 
         sb = superblocks{i};
@@ -117,29 +147,18 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
         % artifact filtering
         spike_rows = sorter_remove_artifact(sb.waves);
 
+        
         valid_sb = sb(spike_rows, :);
+        
+        blocks = unique(valid_sb.block);
+        
         clear sb;
-
-        blocks = unique(valid_sb.block);  % first element is RF block.
-        
-        sb_sst_dir = fullfile(sst_dir, sprintf('superblock-%d', i));
-        sb_fig_dir = fullfile(fig_dir, sprintf('superblock-%d', i));
-        
-        
-        if ~exist(sb_sst_dir, 'dir')
-            version = 0;
-            mkdir(sb_sst_dir);
-            mkdir(sb_fig_dir);  % implied
-        else
-            % get list of old sst files
-            % get version count by splitting a file name on underscore
-            
-        end
 
         for ch = 1:nChannels
             rows = valid_sb.chan == ch;
 
             chan_tbl = valid_sb(rows, :);
+
 
             % User alignment
             [option, shift] = prompt_snip_align(chan_tbl.waves);
@@ -155,41 +174,60 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
             chan_tbl.sortc = class;
 
             clear aligned class;
+            
+            % outlier handling: assign sortc of 0 to outliers
+            
+            
+            
+            % figures
+            
+            % 2d feature plot
+            make_2d(chan_tbl, feature, sb_fig_dir, iter_count);
+            
+            % 3d feature plot
+            make_3d(chan_tbl, feature, sb_fig_dir, iter_count);
+            
+            % pie chart
+            make_pie(chan_tbl, sb_fig_dir, iter_count);
 
             % sst stuff
-            if mrf
-                % handle find filtering
-            else
-                sst = superspiketrain_dx(tank_path, blocks, ch, 0, ...
-                                         'timestamps', 'sortcode', 'CSPK');
-            end
+            sst = superspiketrain_dx(tank_path, blocks, ch, 0, ...
+                                     'timestamps', 'sortcode', 'CSPK');
 
             for unit = 1:K
                 sst_copy = sst;
                 sst_copy.Unit = unit;
 
                 % remove spikes that are different units and different channel
+                
                 unit_idx = chan_tbl.sortc == unit;
                 unit_ts = chan_tbl.ts(unit_idx);
-                sst_ts = sst_copy.TS;
+                unit_part = chan_tbl.part(unit_idx);
+                
+                sst_ts = sst_copy.Spikes.TS;
                 sst_copy.Spikes(~ismember(sst_ts, unit_ts), :) = [];
-
+                
+                % Add FInd field.
+                sst_copy.Spikes.FInd = unit_part(ismember(unit_ts, sst_ts));
+                
                 sst_copy.SortCodeType = 'DanielX';
 
                 % save object to sst directory
                 sst_varname = sprintf('SST_ch%d_un%d', ch, unit);
-                sst_filename = sprintf('%s.mat', sst_varname);
-
+                
+                if iter_count > 0
+                    sst_varname = sprintf('%s_%d', sst_varname, iter_count);
+                end
+                
                 var_cmd = sprintf('%s = sst_copy;', sst_varname);
                 eval(var_cmd);
                 
-                
-
-                sst_copy_path = fullfile(data_dir, sst_filename);
+                sst_filename = sprintf('%s.mat', sst_varname);
+                sst_copy_path = fullfile(sb_sst_dir, sst_filename);
                 save(sst_copy_path, sst_varname);
 
                 clear sst_copy sst_varname;
-
+                
             end % save SST object loop
 
             clear chan_tbl sst;
@@ -201,3 +239,49 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
     end % superblock loop
 
 end
+
+function [iteration] = run_count(fig_dir)
+% Returns the number of times the tank's superblocks have been sorted. If this
+% is the first time the tank has been sorted, returns 0. Otherwise, returns a
+% positive integer.
+    
+    iteration = 0;
+
+    meta_loc = fullfile(fig_dir, 'metadata.mat');
+    if ~exist(meta_loc, 'file')
+        return
+    else
+        meta = load(meta_loc);
+        iteration = meta.iter + 1;
+        clear meta
+    end
+    
+end
+
+function [] = move_old_files(fig_dir, sst_dir)
+% Moves old files in Figures and SST_obj directories to 'old' directory in both.
+    
+    old_fig = fullfile(fig_dir, 'old');
+    old_sst = fullfile(sst_dir, 'old');
+    
+    fig_sb = fullfile(fig_dir, 'superblock-*');
+    sst_sb = fullfile(sst_dir, 'superblock-*');
+    
+    % move superblock directories
+    movefile(fig_sb, old_fig);
+    movefile(sst_sb, old_sst);
+    
+    % move metadata file    
+    iter = run_count(fig_dir);
+
+    meta_loc = fullfile(fig_dir, 'metadata.mat');
+    
+    if iter > 0
+        meta_new_name = sprintf('metadata_%d.mat', iter);
+        movefile(meta_loc, fullfile(old_fig, meta_new_name));
+    else
+        movefile(meta_loc, old_fig);
+    end
+
+end
+
