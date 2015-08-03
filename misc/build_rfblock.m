@@ -19,6 +19,8 @@ function [superblocks, rfs, mrf] = build_rfblock(path, save_dir, rfs_user)
 % blocks have more than one RF. Be aware that the harder case requires more time
 % to run.
 %
+% Artifacts, if present, will be removed.
+%
 % The tank is located at absolute path PATH. Finally, the result is
 % saved to the SAVE_DIR directory. The result is saved to a .mat file:
 %
@@ -65,7 +67,7 @@ function [superblocks, rfs, mrf] = build_rfblock(path, save_dir, rfs_user)
 %               as the user override, if valid.
 % MRF           boolean. True if RFS has blocks that have multiple RFs.
 %
-% See also FIND_RFS, TDT2MAT.
+% See also FIND_RFS, REMOVE_EAMP_ARTIFACT, TDT2MAT.
 
     if ~exist(save_dir, 'dir')
         error('Invalid save directory');
@@ -313,6 +315,13 @@ function [superblocks] = handle_single_rf(path, rfs)
             
             snip = data.snips.CSPK;
             epoc = data.epocs;
+            
+            idx = remove_eamp_artifact(snip, epoc);
+
+            snip.data = snip.data(idx, :);
+            snip.chan = snip.chan(idx);
+            snip.sortcode = snip.sortcode(idx);
+            snip.ts = snip.ts(idx);
 
             N = length(snip.chan);
             
