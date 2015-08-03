@@ -111,9 +111,9 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
     iter_count = run_count(fig_dir);
     
     if iter_count > 0
-        % With this, we assume that Figures and SST_obj directories will be
+        % After this, we assume that Figures and SST_obj directories will be
         % empty and that metadata.mat doesn't exist in Figures.
-        move_old_files(fig_dir, sst_dir);
+        move_old_files(fig_dir, sst_dir, iter_count);
     end
     
     % create metadata file.
@@ -131,13 +131,13 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
     seed = rng(12281990, 'twister');
 
     for i = 1:nSuperblocks
-        sb_sst_dir = fullfile(sst_dir, sprintf('superblock-%d', i));
-        sb_fig_dir = fullfile(fig_dir, sprintf('superblock-%d', i));
+        sst_sb_dir = fullfile(sst_dir, sprintf('superblock-%d', i));
+        fig_sb_dir = fullfile(fig_dir, sprintf('superblock-%d', i));
         
-        if ~exist(sb_sst_dir, 'dir')
+        if ~exist(sst_sb_dir, 'dir')
             % old files already moved; for safety.
-            mkdir(sb_sst_dir);
-            mkdir(sb_fig_dir);
+            mkdir(sst_sb_dir);
+            mkdir(fig_sb_dir);
         end
         
         rng(seed);
@@ -182,13 +182,13 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
             % figures
             
             % 2d feature plot
-            make_2d(chan_tbl, feature, sb_fig_dir, iter_count);
+            make_2d(chan_tbl, feature, fig_sb_dir, iter_count);
             
             % 3d feature plot
-            make_3d(chan_tbl, feature, sb_fig_dir, iter_count);
+            make_3d(chan_tbl, feature, fig_sb_dir, iter_count);
             
             % pie chart
-            make_pie(chan_tbl, sb_fig_dir, iter_count);
+            make_pie(chan_tbl, fig_sb_dir, iter_count);
 
             % sst stuff
             sst = superspiketrain_dx(tank_path, blocks, ch, 0, ...
@@ -223,7 +223,7 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
                 eval(var_cmd);
                 
                 sst_filename = sprintf('%s.mat', sst_varname);
-                sst_copy_path = fullfile(sb_sst_dir, sst_filename);
+                sst_copy_path = fullfile(sst_sb_dir, sst_filename);
                 save(sst_copy_path, sst_varname);
 
                 clear sst_copy sst_varname;
@@ -258,11 +258,19 @@ function [iteration] = run_count(fig_dir)
     
 end
 
-function [] = move_old_files(fig_dir, sst_dir)
+function [] = move_old_files(fig_dir, sst_dir, iter_count)
 % Moves old files in Figures and SST_obj directories to 'old' directory in both.
     
     old_fig = fullfile(fig_dir, 'old');
     old_sst = fullfile(sst_dir, 'old');
+    
+    if ~exist(old_fig, 'dir')
+        mkdir(old_fig);
+    end
+    
+    if ~exist(old_sst, 'dir')
+        mkdir(old_sst);
+    end
     
     fig_sb = fullfile(fig_dir, 'superblock-*');
     sst_sb = fullfile(sst_dir, 'superblock-*');
@@ -271,13 +279,12 @@ function [] = move_old_files(fig_dir, sst_dir)
     movefile(fig_sb, old_fig);
     movefile(sst_sb, old_sst);
     
-    % move metadata file    
-    iter = run_count(fig_dir);
+    % move metadata file
 
     meta_loc = fullfile(fig_dir, 'metadata.mat');
     
-    if iter > 0
-        meta_new_name = sprintf('metadata_%d.mat', iter);
+    if iter_count > 0
+        meta_new_name = sprintf('metadata_%d.mat', iter_count);
         movefile(meta_loc, fullfile(old_fig, meta_new_name));
     else
         movefile(meta_loc, old_fig);

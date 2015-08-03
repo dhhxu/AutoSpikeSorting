@@ -4,7 +4,7 @@ function [agg] = agglomerate_blocks(path)
 % AGG = AGGLOMERATE_BLOCKS(PATH)
 %
 % Given a tank located at path PATH, join the block information together into
-% one giant table AGG.
+% one giant table AGG. Also removes artifacts, if present.
 %
 % Note: the output AGG is a very large table and is not saved to file, as it is
 % intended to be an intermediate variable. Most likely PARTITION_RFS will
@@ -22,7 +22,7 @@ function [agg] = agglomerate_blocks(path)
 %           waves   1x30 double vector, describes a waveform
 %           part    integer, file index
 %
-% See also PARTITION_RFS
+% See also PARTITION_RFS, REMOVE_EAMP_ARTIFACT.
 
     if ~exist(path, 'dir')
         error('Tank not found: %s', path);
@@ -51,8 +51,17 @@ function [agg] = agg_core(path)
             warning('Problem in opening block %d\n', i);
             continue
         end
+
         snip = data.snips.CSPK;
         epoc = data.epocs;
+        
+        % remove artifacts
+        idx = remove_eamp_artifact(snip, epoc);
+
+        snip.data = snip.data(idx, :);
+        snip.chan = snip.chan(idx);
+        snip.sortcode = snip.sortcode(idx);
+        snip.ts = snip.ts(idx);
         
         all_parts = epoc.FInd.data;
         part_list = unique(all_parts);
