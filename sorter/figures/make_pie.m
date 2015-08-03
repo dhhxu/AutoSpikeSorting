@@ -3,7 +3,8 @@ function [] = make_pie(tbl, loc, iter)
 % file.
 %
 % INPUT:
-% TBL   Table containing superblock data
+% TBL   Table containing superblock data. May contain outliers, which will be
+%       ignored.
 % LOC   String path to directory to save the figure file
 % ITER  Integer of number of times the superblock has been previously sorted
 %
