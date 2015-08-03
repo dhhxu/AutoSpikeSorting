@@ -1,7 +1,7 @@
 classdef superspiketrain_dx
-    % SST = superspiketrain_dx(tankname,blocklist,channel,unit,variable) will
-    % create a superspiketrain object for reading in TDT data from unit on
-    % channel on blocklist from tankname.
+    % SST = superspiketrain_dx(tankname,blocklist,channel,unit,superblock,variable)
+    % will create a superspiketrain object for reading in TDT data from unit on
+    % channel on blocklist describing a superblock from tankname.
     % example sst = superspiketrain_dx('R:\2Data\AOSData\AOS003',10,62,1,true)
     %
     % [SST, WaveData, SortCode] = superspiketrain_dx(...,'waveforms') will
@@ -190,7 +190,9 @@ classdef superspiketrain_dx
             'RasterS W','RasterS1','RasterS2','RasterE'});
         SortCodeType = 'PLXSort';
                 
-        
+        % Superblock index
+        Superblock = 0;
+
     end
     
     
@@ -201,7 +203,7 @@ classdef superspiketrain_dx
         %% Instantiation and Data Collection Functions
         %This function initializes the object and collects data from the
         %required tank, blocks, channel and units
-        function [obj, varargout] = superspiketrain_dx(t,b,ch,un,varargin)
+        function [obj, varargout] = superspiketrain_dx(t,b,ch,un,sb,varargin)
             % This function is the fundamental constructor for the spiketrain
             % ojbect
             % 
@@ -278,6 +280,7 @@ classdef superspiketrain_dx
             obj.Channel=ch;
             obj.Unit=un;
             obj.Block=b;
+            obj.Superblock=sb;
             
             if obj.Timing; fprintf('Reading user input took %f seconds.\n',toc); tic; end;
   
