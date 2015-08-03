@@ -135,7 +135,7 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
         fig_sb_dir = fullfile(fig_dir, sprintf('superblock-%d', i));
         
         if ~exist(sst_sb_dir, 'dir')
-            % old files already moved; for safety.
+            % old files already moved; superblock directories shouldn't exist.
             mkdir(sst_sb_dir);
             mkdir(fig_sb_dir);
         end
@@ -143,21 +143,13 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
         rng(seed);
 
         sb = superblocks{i};
-
-        % artifact filtering
-        spike_rows = sorter_remove_artifact(sb.waves);
-
         
-        valid_sb = sb(spike_rows, :);
-        
-        blocks = unique(valid_sb.block);
-        
-        clear sb;
+        blocks = unique(sb.block);
 
         for ch = 1:nChannels
-            rows = valid_sb.chan == ch;
+            rows = sb.chan == ch;
 
-            chan_tbl = valid_sb(rows, :);
+            chan_tbl = sb(rows, :);
 
 
             % User alignment
@@ -170,31 +162,43 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
             chBuffer(ch) = K;
 
             class = algo(aligned, K);
-
-            chan_tbl.sortc = class;
-
-            clear aligned class;
+            
+            clear aligned
             
             % outlier handling: assign sortc of 0 to outliers
             
+            chan_tbl.sortc = find_outliers(feature(chan_tbl.waves), class);
             
+            clear class
             
             % figures
             
+            % zero unit is for outliers
+            outliers = chan_tbl(chan_tbl.sortc == 0, :);
+            real = chan_tbl(chan_tbl.sortc ~= 0, :);
+            
             % 2d feature plot
-            make_2d(chan_tbl, feature, fig_sb_dir, iter_count);
+            make_2d(real, feature, fig_sb_dir, iter_count, false);
+            make_2d(outliers, feature, fig_sb_dir, iter_count, true);
             
             % 3d feature plot
-            make_3d(chan_tbl, feature, fig_sb_dir, iter_count);
+            make_3d(real, feature, fig_sb_dir, iter_count, false);
+            make_3d(outliers, feature, fig_sb_dir, iter_count, false);
+
+            % pie chart (real only)
+            make_pie(real, fig_sb_dir, iter_count);
             
-            % pie chart
-            make_pie(chan_tbl, fig_sb_dir, iter_count);
+            % spike plot (outliers only)
+            
+            
+            % side by side plot (real only)
+
 
             % sst stuff
-            sst = superspiketrain_dx(tank_path, blocks, ch, 0, ...
+            sst = superspiketrain_dx(tank_path, blocks, ch, 0, i, ...
                                      'timestamps', 'sortcode', 'CSPK');
 
-            for unit = 1:K
+            for unit = 0:K
                 sst_copy = sst;
                 sst_copy.Unit = unit;
 
@@ -230,11 +234,11 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
                 
             end % save SST object loop
 
-            clear chan_tbl sst;
+            clear chan_tbl sst real outliers;
 
         end % channel loop
 
-        clear valid_sb;
+        clear sb;
 
     end % superblock loop
 
