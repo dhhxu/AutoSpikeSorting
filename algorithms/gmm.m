@@ -9,15 +9,8 @@ function class = gmm(data, k)
 %
 % OUTPUT:
 % CLASS     Nx1 vector of integer class labels.
-
-
-%% Features
-
-    features = pca_coeff(1, 3, data);
-
-%% Clustering
     
-    class = cluster(fitgmdist(features, k), features);
+    class = cluster(fitgmdist(data, k), data);
     
 end
 
