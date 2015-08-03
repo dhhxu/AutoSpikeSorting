@@ -13,7 +13,7 @@ function [real_idx] = sorter_remove_artifact(spikes, threshold)
 %               artifacts. Default: 9
 %
 % OUTPUT:
-% REAL_IDX      Mx1 binary vector, where 1's signifies non-artifact spikes
+% REAL_IDX      Mx1 logical vector, where 1's signifies non-artifact spikes
 %
 % Source:
 % matlab_sorter_technique.m (author: David Martel)
@@ -64,5 +64,7 @@ function [real_idx] = filter_artifacts(spikes, threshold)
     artifact_count = sum(~real_idx);
     fprintf('Detected %d artifacts out of %d spikes\n', artifact_count, ...
             nSpikes);
+        
+    real_idx = logical(real_idx);
 
 end
