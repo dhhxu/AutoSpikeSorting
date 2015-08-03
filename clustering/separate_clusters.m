@@ -6,7 +6,7 @@ function [clusters] = separate_clusters(spike_matrix, class)
 % Given a cluster assignment vector CLASS, split the waveform matrix
 % SPIKE_MATRIX into individual matrices, one for each unique cluster identified.
 %
-% Note the special case of noise cluster, which has a class label of -1. This
+% Note the special case of noise cluster, which has a class label of 0. This
 % function ignores it and only separates 'non-noise' clusters.
 %
 % INPUT:
@@ -36,6 +36,8 @@ end
 function [clusters] = separate(spike_matrix, class)
     numClasses = sum(unique(class) > 0);
     clusters = cell(1, numClasses);
+    
+    % next row index to insert a class spike into.
     freeRow = ones(1, numClasses);
     
     for i = 1:numClasses
@@ -46,7 +48,7 @@ function [clusters] = separate(spike_matrix, class)
     
     for i = 1:length(spike_matrix)
         cls = class(i);
-        if cls < 0
+        if cls <= 0
             continue;
         end
         spike = spike_matrix(i, :);
