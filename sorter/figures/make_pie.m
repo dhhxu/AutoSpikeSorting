@@ -11,10 +11,11 @@ function [] = make_pie(tbl, loc, iter)
 % NONE
 
     h = figure('Visible', 'off');
-    
+    set(h, 'CreateFcn', 'set(gcf, ''Visible'', ''on'')');
+
     good_idx = tbl.sortc > 0;
     
-    K = unique(tbl.sortc(good_idx));
+    K = length(unique(tbl.sortc(good_idx)));
     
     proports = zeros(1, K);
     
@@ -23,9 +24,9 @@ function [] = make_pie(tbl, loc, iter)
         proports(i) = sum(class_idx);
     end
     
-    labels = strtrim(cellstr(num2str((1:K)'))');
-
-    pie(proports, labels);
+%     labels = strtrim(cellstr(num2str((1:K)'))');
+%     pie(proports, labels);
+    pie(proports);
     
     chan = tbl.chan(1);
 

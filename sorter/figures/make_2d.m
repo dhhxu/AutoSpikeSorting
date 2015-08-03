@@ -10,7 +10,7 @@ function [] = make_2d(tbl, feature, loc, iter)
 % the <iter> suffix is dropped.
 %
 % INPUT:
-% TBL       Table containing superblock data
+% TBL       Table containing superblock data for a particular channel
 % FEATURE   Handle to the feature transform function
 % LOC       String path to directory to save the figure file
 % ITER      Integer of number of times the superblock has been previously sorted
@@ -21,6 +21,8 @@ function [] = make_2d(tbl, feature, loc, iter)
 % SEE ALSO BUILD_RFBLOCK
 
     h = figure('Visible', 'off');
+    
+    set(h, 'CreateFcn', 'set(gcf, ''Visible'', ''on'')');
     
     good_idx = tbl.sortc > 0;
     

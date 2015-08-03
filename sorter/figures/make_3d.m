@@ -21,7 +21,8 @@ function [] = make_3d(tbl, feature, loc, iter)
 % SEE ALSO BUILD_RFBLOCK
 
     h = figure('Visible', 'off');
-    
+    set(h, 'CreateFcn', 'set(gcf, ''Visible'', ''on'')');
+
     good_idx = tbl.sortc > 0;
     
     fspace = feature(tbl.waves(good_idx, :));
