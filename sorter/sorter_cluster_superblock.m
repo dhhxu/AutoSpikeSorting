@@ -189,10 +189,10 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
             make_pie(real, fig_sb_dir, iter_count);
             
             % spike plot (outliers only)
-            
+            make_allspikes(outliers, fig_sb_dir, iter_count);
             
             % side by side plot (real only)
-
+            make_units(real, fig_sb_dir, iter_count);
 
             % sst stuff
             sst = superspiketrain_dx(tank_path, blocks, ch, 0, i, ...
