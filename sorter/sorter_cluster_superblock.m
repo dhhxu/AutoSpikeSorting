@@ -1,9 +1,9 @@
-function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
+function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
                                              tank_info, data_dir)
 % SORTER_CLUSTER_SUPERBLOCK cluster receptive field superblocks and construct
 % superspiketrain objects and cluster figures for future analysis.
 %
-% SORTER_CLUSTER_SUPERBLOCK(SUPERBLOCKS, FEATURE, ALGO, MRF, TANK_INFO, DATA_DIR)
+% SORTER_CLUSTER_SUPERBLOCK(SUPERBLOCKS, FEATURE, ALGO, RFS, TANK_INFO, DATA_DIR)
 %
 % Given a one dimensional cell array SUPERBLOCKS containing superblock tables,
 % perform clustering on individual channels for each superblock. These
@@ -66,8 +66,6 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
 % ALGO          function handle of the clustering algorithm. It should take in
 %               two parameters: the transformed spikes and the number of units,
 %               which is user-determined.
-% MRF           boolean that is true if the blocks in the tank have multiple
-%               RFs
 % TANK_INFO     Struct containing tank information:
 %                   tank    string of tank name
 %                   path    string of path to tank directory
@@ -197,12 +195,39 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
             % sst stuff
             sst = superspiketrain_dx(tank_path, blocks, ch, 0, i, ...
                                      'timestamps', 'sortcode', 'CSPK');
+                                 
+            % prune parts that don't match
+            for bIdx = 1:length(blocks)
+                block_num = blocks(bIdx);
+                block_rows = chan_tbl.block == block_num;
+                block_tbl = chan_tbl(block_rows, :);
+                
+                parts = unique(block_tbl.part);
+                
+                if length(parts) == 1    % block is entire RF; keep all parts.
+                    continue
+                end
+                
+                epoc_blk_idx = sst.Epocs.Values.Block == block_num;
+                
+                val_blk = sst.Epocs.Values(epoc_blk_idx, :);
+                
+                % indices of matching parts -- inverse are rows to remove
+                part_match_idx = ismember(val_blk.find, parts);
+                
+                sst.Epocs.Values(~part_match_idx, :) = [];
+                sst.Epocs.TSOn(~part_match_idx, :) = [];
+                sst.Epocs.TSOff(~part_match_idx, :) = [];
+                
+                clear val_blk epoc_blk_idx
+                clear block_rows block_tbl
+            end
 
             for unit = 0:K
                 sst_copy = sst;
                 sst_copy.Unit = unit;
 
-                % remove spikes that are different units and different channel
+                % remove spikes that are different units
                 
                 unit_idx = chan_tbl.sortc == unit;
                 unit_ts = chan_tbl.ts(unit_idx);
@@ -215,6 +240,7 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, mrf, ...
                 sst_copy.Spikes.FInd = unit_part(ismember(unit_ts, sst_ts));
                 
                 sst_copy.SortCodeType = 'DanielX';
+                
 
                 % save object to sst directory
                 sst_varname = sprintf('SST_ch%d_un%d', ch, unit);

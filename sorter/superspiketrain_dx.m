@@ -444,6 +444,10 @@ classdef superspiketrain_dx
             
             obj.Summary;
             
+            % convert nominal back to integer
+            obj.Epocs.Values.Block = str2num(char(obj.Epocs.Values.Block));
+            obj.Epocs.TSOn.Block = str2num(char(obj.Epocs.TSOn.Block));
+            obj.Epocs.TSOff.Block = str2num(char(obj.Epocs.TSOff.Block));
         end
         
         
