@@ -62,6 +62,8 @@ function [] = make_units(tbl, loc, iter)
     
     allaxes = findall(gcf, 'type', 'axes');
     linkaxes(allaxes);
+    spike_width = size(tbl.waves, 2);
+    xlim([0 (spike_width + 1)]);
     
     chan = tbl.chan(1);
     
