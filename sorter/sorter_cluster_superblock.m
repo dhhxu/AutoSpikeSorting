@@ -84,9 +84,9 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
         error('Invalid tank_info struct');
     end
     
-    if ~ishandle(feature)
+    if ~isa(feature, 'function_handle')
         error('Invalid feature handle');
-    elseif ~ishandle(algo)
+    elseif ~isa(algo, 'function_handle')
         error('Invalid algorithm handle');
     end
     
@@ -282,7 +282,8 @@ function [iteration] = run_count(fig_dir)
         return
     else
         meta = load(meta_loc);
-        iteration = meta.iter + 1;
+        metadata = meta.metadata;
+        iteration = metadata.iter + 1;
         clear meta
     end
     

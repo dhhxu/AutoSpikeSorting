@@ -90,11 +90,11 @@ function [opt, shift] = parse_input(answer, name)
         return;
     end
     
-    if ~strcmp(raw_opt, 'max') && ~strcmp(raw_option, 'min')
+    if ~strcmp(raw_opt, 'max') && ~strcmp(raw_opt, 'min')
         warning('Invalid alignment option: %s', raw_opt);
         return;
     else
-        opt = raw_option;
+        opt = raw_opt;
     end
     
     shift = str2double(raw_shift);

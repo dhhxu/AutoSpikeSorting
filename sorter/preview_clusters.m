@@ -15,7 +15,7 @@ function nClusters = preview_clusters(spikes, feature, dim, defK)
 %
 % The feature handle must have a signature of: @(spikes)
 
-    if ~ishandle(feature)
+    if ~isa(feature, 'feature_handle')
         error('Invalid feature handle');
     elseif dim ~= 2 && dim ~= 3
         error('Invalid dimension');
