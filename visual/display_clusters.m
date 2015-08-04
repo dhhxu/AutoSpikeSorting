@@ -1,6 +1,18 @@
 function [] = display_clusters(data, class, name)
+% DISPLAY_CLUSTERS plot identified unit clusters side by side along with
+% their mean spike.
 %
+% DISPLAY_CLUSTERS(DATA, CLASS, NAME)
 %
+% INPUT:
+% DATA      NxM matrix of spikes. Rows correspond to spikes.
+% CLASS     Nx1 integer vector of unit labels. Spikes with labels less than
+%           one are ignored.
+% NAME      (optional) string for the figure name. Default: 'Figure'
+%
+% OUTPUT:
+% NONE
+
     SetDefaultValue(3, 'name', 'Figure');
     
     clusters = separate_clusters(data, class);
