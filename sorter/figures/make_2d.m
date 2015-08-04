@@ -29,10 +29,7 @@ function [] = make_2d(tbl, feature, loc, iter, outlier)
     
     set(h, 'CreateFcn', 'set(gcf, ''Visible'', ''on'')');
     
-    good_idx = tbl.sortc > 0;
-    
-    fspace = feature(tbl.waves(good_idx, :));
-    scatter(fspace(:, 1), fspace(:, 2), 0.9, tbl.sortc(good_idx));
+    fspace = feature(tbl.waves);
     
     chan = tbl.chan(1);
     
@@ -40,6 +37,9 @@ function [] = make_2d(tbl, feature, loc, iter, outlier)
     
     if outlier
         fname = sprintf('%s_outlier', fname);
+        scatter(fspace(:, 1), fspace(:, 2), 0.9, [0.5 0.5 0.5]);
+    else
+        scatter(fspace(:, 1), fspace(:, 2), 0.9, tbl.sortc);
     end
     
     if iter > 0

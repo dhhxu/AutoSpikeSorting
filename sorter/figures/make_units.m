@@ -60,6 +60,9 @@ function [] = make_units(tbl, loc, iter)
         draw_unit_cluster(tbl, i, cm(i, :));
     end
     
+    allaxes = findall(gcf, 'type', 'axes');
+    linkaxes(allaxes);
+    
     chan = tbl.chan(1);
     
     fname = sprintf('units_ch%d', chan);

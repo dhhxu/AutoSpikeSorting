@@ -28,11 +28,9 @@ function [] = make_3d(tbl, feature, loc, iter, outlier)
     h = figure('Visible', 'off');
 
     set(h, 'CreateFcn', 'set(gcf, ''Visible'', ''on'')');
-
-    good_idx = tbl.sortc > 0;
     
-    fspace = feature(tbl.waves(good_idx, :));
-    scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 0.9, tbl.sortc(good_idx));
+    fspace = feature(tbl.waves);
+    
     
     chan = tbl.chan(1);
     
@@ -40,6 +38,9 @@ function [] = make_3d(tbl, feature, loc, iter, outlier)
     
     if outlier
         fname = sprintf('%s_outlier', fname);
+        scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 0.9, [0.5 0.5 0.5]);
+    else
+        scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 0.9, tbl.sortc);
     end
     
     if iter > 0
