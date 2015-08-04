@@ -17,6 +17,9 @@ function [dm] = diffMap(spikes)
 % OUTPUT:
 % DM        Nx3 matrix of the diffusion map.
 %
+% Source:
+% DrToolbox
+%
 % See also COMPUTE_MAPPING
 
     dm = compute_mapping(spikes, 'DiffusionMaps', 3);
