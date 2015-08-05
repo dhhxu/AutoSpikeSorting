@@ -49,7 +49,7 @@ function [] = make_units(tbl, loc, iter)
     end
     
     % colormap
-    if nUnits <= 6
+    if nUnits < 6
         cm = parula(nUnits);
     else
         cm = parula(6);
@@ -83,7 +83,7 @@ end
 function [] = draw_unit_cluster(table, unit, color)
 % Draw the spikes belonging to unit UNIT on the same figure. Assumes that
 % subplot is called before this is called. Also plots the mean spike in a
-% thick black line and 95% confidence as dashed black lines.
+% thick red line and 95% confidence as dashed red lines.
 
     unit_spikes = table(table.sortc == unit, :);
     
@@ -94,17 +94,12 @@ function [] = draw_unit_cluster(table, unit, color)
     for i = 1:nSpikes
         plot(unit_spikes.waves(i, :), 'Color', color, 'LineWidth', 0.25);
     end
-    
-%     [mean_spike, ~, bounds, ~] = normfit(unit_spikes.waves);
     mean_spike = get_mean_spike(unit_spikes.waves);
-    plot(mean_spike, 'Color', 'k', 'LineWidth', 1);
+    plot(mean_spike, 'Color', 'r', 'LineWidth', 2);
     
-    sd = std(unit_spikes.waves, 0, 2);
+    sd = std(unit_spikes.waves, 0, 1);
     plot(mean_spike + 2 * sd, 'Color', 'r', 'LineWidth', 1, 'LineStyle', '--');
     plot(mean_spike - 2 * sd, 'Color', 'r', 'LineWidth', 1, 'LineStyle', '--');
-    
-%     plot(bounds(1, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
-%     plot(bounds(2, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
 
     hold off;
 

@@ -38,9 +38,11 @@ function [] = make_3d(tbl, feature, loc, iter, outlier)
     
     if outlier
         fname = sprintf('%s_outlier', fname);
-        scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 0.9, [0.5 0.5 0.5]);
+        scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 5, [0.5 0.5 0.5], ...
+                 'filled');
     else
-        scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 0.9, tbl.sortc);
+        scatter3(fspace(:, 1), fspace(:, 2), fspace(:, 3), 5, tbl.sortc, ...
+                 'filled');
     end
     
     if iter > 0

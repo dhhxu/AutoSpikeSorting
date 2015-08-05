@@ -37,9 +37,9 @@ function [] = make_2d(tbl, feature, loc, iter, outlier)
     
     if outlier
         fname = sprintf('%s_outlier', fname);
-        scatter(fspace(:, 1), fspace(:, 2), 0.9, [0.5 0.5 0.5]);
+        scatter(fspace(:, 1), fspace(:, 2), 5, [0.5 0.5 0.5], 'filled');
     else
-        scatter(fspace(:, 1), fspace(:, 2), 0.9, tbl.sortc);
+        scatter(fspace(:, 1), fspace(:, 2), 5, tbl.sortc, 'filled');
     end
     
     if iter > 0
