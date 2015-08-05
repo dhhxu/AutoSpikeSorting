@@ -56,6 +56,8 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
 %   feature     handle of the feature function
 %   algo        handle of the algorithm function
 %   iter        run count
+%   nFeature    NxM matrix of feature dimension size. Rows correspond to
+%               channels, columns correspond to superblock number.
 %
 % This function is interactive. The user must provide spike alignment options 
 % and the number of clusters.
@@ -117,15 +119,14 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
         move_old_files(fig_dir, sst_dir, iter_count);
     end
     
-    % create metadata file.
-    metadata.feature = feature;
-    metadata.algo = algo;
-    metadata.iter = iter_count; %#ok<STRNU>
-    save(fullfile(fig_dir, 'metadata.mat'), 'metadata');
-
     nSuperblocks = length(superblocks);
     nChannels = length(unique(superblocks{1}.chan));
     
+    
+    nFeatures = zeros(nChannels, nSuperblocks);
+    
+    % channels should have roughly same number of units across superblocks.
+    % Assumes that each superblock has same number of channels.
     chBuffer = zeros(nChannels, 1);
     
     % set random seed
@@ -146,12 +147,11 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
         sb = superblocks{i};
         
         blocks = unique(sb.block);
-%%
-        for ch = 1:2%changeme
+        
+        for ch = 1:nChannels
+%         for ch = 1:1
             rows = sb.chan == ch;
-
             chan_tbl = sb(rows, :);
-
 
             % User alignment
             [option, shift] = prompt_snip_align(chan_tbl.waves);
@@ -163,8 +163,12 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
             warning('on', 'all');
 
             chBuffer(ch) = K;
+            
+            fspace = feature(aligned);
+            
+            nFeatures(ch, i) = size(fspace, 2);
 
-            class = algo(aligned, K);
+            class = algo(fspace, K);
             
             clear aligned
             
@@ -281,6 +285,13 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
         clear sb;
 
     end % superblock loop
+
+    % create metadata file.
+    metadata.feature = feature;
+    metadata.algo = algo;
+    metadata.iter = iter_count;
+    metadata.nFeatures = nFeatures;  %#ok<STRNU>
+    save(fullfile(fig_dir, 'metadata.mat'), 'metadata');
 
 end
 
