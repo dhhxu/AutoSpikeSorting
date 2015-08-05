@@ -99,9 +99,9 @@ function [] = draw_unit_cluster(table, unit, color)
     mean_spike = get_mean_spike(unit_spikes.waves);
     plot(mean_spike, 'Color', 'k', 'LineWidth', 1);
     
-    sd = std(unit_spikes.waves, 0, 1);
-    plot(mean_spike + 2 * sd, 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
-    plot(mean_spike - 2 * sd, 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
+    sd = std(unit_spikes.waves, 0, 2);
+    plot(mean_spike + 2 * sd, 'Color', 'r', 'LineWidth', 1, 'LineStyle', '--');
+    plot(mean_spike - 2 * sd, 'Color', 'r', 'LineWidth', 1, 'LineStyle', '--');
     
 %     plot(bounds(1, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
 %     plot(bounds(2, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
