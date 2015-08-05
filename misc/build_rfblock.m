@@ -313,10 +313,17 @@ function [superblocks] = handle_single_rf(path, rfs)
                 continue;
             end
             
-            snip = data.snips.CSPK;
-            epoc = data.epocs;
+            try
+                snip = data.snips.CSPK;
+                epoc = data.epocs;
+            catch
+                warning('Problem accessing data struct fields for block: %d', j)
+                continue;
+            end
             
             idx = remove_eamp_artifact(snip, epoc);
+            
+            idx = logical(idx);
 
             snip.data = snip.data(idx, :);
             snip.chan = snip.chan(idx);
