@@ -95,12 +95,16 @@ function [] = draw_unit_cluster(table, unit, color)
         plot(unit_spikes.waves(i, :), 'Color', color, 'LineWidth', 0.25);
     end
     
-    [mean_spike, ~, bounds, ~] = normfit(unit_spikes.waves);
-    
+%     [mean_spike, ~, bounds, ~] = normfit(unit_spikes.waves);
+    mean_spike = get_mean_spike(unit_spikes.waves);
     plot(mean_spike, 'Color', 'k', 'LineWidth', 1);
     
-    plot(bounds(1, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
-    plot(bounds(2, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
+    sd = std(unit_spikes.waves, 0, 1);
+    plot(mean_spike + 2 * sd, 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
+    plot(mean_spike - 2 * sd, 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
+    
+%     plot(bounds(1, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
+%     plot(bounds(2, :), 'Color', 'k', 'LineWidth', 0.75, 'LineStyle', '--');
 
     hold off;
 
