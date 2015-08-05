@@ -13,7 +13,7 @@ function [] = make_units(tbl, loc, iter)
 % Note that TBL should only represent the units on a single channel only.
 % All the spikes should have non-zero unit class labels.
 %
-% The figure is saved to "LOC/units_ch<channel number>_<iter>.fig". If ITER is
+% The figure is saved to "LOC/ch<channel number>_units_<iter>.fig". If ITER is
 % zero the <iter> suffix is dropped.
 %
 % INPUT:
@@ -67,7 +67,7 @@ function [] = make_units(tbl, loc, iter)
     
     chan = tbl.chan(1);
     
-    fname = sprintf('units_ch%d', chan);
+    fname = sprintf('ch%d_units', chan);
     
     if iter > 0
         fname = sprintf('%s_%d', fname, iter);

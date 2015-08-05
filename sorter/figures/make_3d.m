@@ -6,11 +6,11 @@ function [] = make_3d(tbl, feature, loc, iter, outlier)
 % Plots the feature representation of the spikes on a superblock channel in 3D
 % space. The spikes are colored by unit assignment.
 %
-% The figure is saved to "LOC/3D_ch<channel number>_<iter>.fig". If ITER is zero
+% The figure is saved to "LOC/ch<channel number>_3D_<iter>.fig". If ITER is zero
 % the <iter> suffix is dropped.
 %
 % If OUTLIER is true, the figure name will instead be:
-%   "LOC/3D_ch<channel number>_outlier_<iter>.fig
+%   "LOC/ch<channel number>_3D_outlier_<iter>.fig
 %
 % INPUT:
 % TBL       Table containing superblock data
@@ -34,7 +34,7 @@ function [] = make_3d(tbl, feature, loc, iter, outlier)
     
     chan = tbl.chan(1);
     
-    fname = sprintf('3D_ch%d', chan);
+    fname = sprintf('ch%d_3D', chan);
     
     if outlier
         fname = sprintf('%s_outlier', fname);

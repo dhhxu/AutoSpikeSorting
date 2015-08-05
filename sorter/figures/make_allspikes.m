@@ -7,7 +7,7 @@ function [] = make_allspikes(tbl, loc, iter)
 % Plots all the outlier spikes in table TBL in a single plot. TBL should
 % represent all outliers for a single channel only.
 %
-% The figure is saved to "LOC/out_ch<channel number>_<iter>.fig". If ITER is
+% The figure is saved to "LOC/ch<channel number>_out_<iter>.fig". If ITER is
 % zero the <iter> suffix is dropped.
 % 
 % INPUT:
@@ -34,7 +34,7 @@ function [] = make_allspikes(tbl, loc, iter)
     
     chan = tbl.chan(1);
     
-    fname = sprintf('out_ch%d', chan);
+    fname = sprintf('ch%d_out', chan);
     
     if iter > 0
         fname = sprintf('%s_%d', fname, iter);

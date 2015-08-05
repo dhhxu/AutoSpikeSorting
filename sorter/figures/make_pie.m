@@ -2,6 +2,11 @@ function [] = make_pie(tbl, loc, iter)
 % MAKE_PIE create pie chart showing unit assignment proportion and save it to
 % file.
 %
+% Pie chart of identified units (non-zero class label) proportions.
+%
+% The figure is saved to "LOC/ch<channel number>_pie_<iter>.fig". If ITER is
+% zero the <iter> suffix is dropped.
+%
 % INPUT:
 % TBL   Table containing superblock data. May contain outliers, which will be
 %       ignored.
@@ -31,7 +36,7 @@ function [] = make_pie(tbl, loc, iter)
     
     chan = tbl.chan(1);
 
-    fname = sprintf('pie_ch%d', chan);
+    fname = sprintf('ch%d_pie', chan);
 
     if iter > 0
         fname = sprintf('%s_%d', fname, iter);
