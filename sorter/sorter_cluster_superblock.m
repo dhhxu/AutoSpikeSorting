@@ -36,13 +36,16 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
 %   SST_ch<channel number>_un<unit number>.mat
 %
 % The format of the saved figure name is:
-%   <Figure type>_ch<channel number>.fig
+%   ch<channel number>_<Figure type>.fig
 %
 %   Where Figure type is one of the following:
 %       <2D>    2D feature space plot 
 %       <3D>    3D feature space plot 
 %       <pie>   Pie chart of unit proportions 
 %       <units> Side-by-side comparision of different units
+%       <out>   Plot of all outlier spikes in original form
+%       <2D_outliers> Same as <2D>, except with outlier spikes
+%       <3D_outliers> Same as <3D>, except with outlier spikes
 %
 % The metadata file will be stored as metadata.mat and will be located in the
 % Figures directory. On a repeat sort, only old files will be renamed based on
@@ -143,8 +146,8 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
         sb = superblocks{i};
         
         blocks = unique(sb.block);
-
-        for ch = 1:nChannels
+%%
+        for ch = 1:2%changeme
             rows = sb.chan == ch;
 
             chan_tbl = sb(rows, :);
@@ -155,16 +158,19 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
             aligned = align_snip(chan_tbl.waves, shift, option);
 
             % User K
+            warning('off', 'all');
             K = preview_clusters(aligned, feature, 3, chBuffer(ch));
-            
+            warning('on', 'all');
+
             chBuffer(ch) = K;
 
             class = algo(aligned, K);
             
             clear aligned
             
+            warning('off', 'all');
+
             % outlier handling: assign sortc of 0 to outliers
-            
             chan_tbl.sortc = find_outliers(feature(chan_tbl.waves), class);
             
             clear class
@@ -181,7 +187,9 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
             
             % 3d feature plot
             make_3d(real, feature, fig_sb_dir, iter_count, false);
-            make_3d(outliers, feature, fig_sb_dir, iter_count, false);
+            make_3d(outliers, feature, fig_sb_dir, iter_count, true);
+            
+            warning('on', 'all');
 
             % pie chart (real only)
             make_pie(real, fig_sb_dir, iter_count);
@@ -195,7 +203,7 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
             % sst stuff
             sst = superspiketrain_dx(tank_path, blocks, ch, 0, i, ...
                                      'timestamps', 'sortcode', 'CSPK');
-                                 
+                
             % prune parts that don't match
             for bIdx = 1:length(blocks)
                 block_num = blocks(bIdx);
@@ -237,8 +245,9 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
                 sst_copy.Spikes(~ismember(sst_ts, unit_ts), :) = [];
                 
                 % Add FInd field.
+                warning('off', 'all');
                 sst_copy.Spikes.FInd = unit_part(ismember(unit_ts, sst_ts));
-                
+                warning('on', 'all');
                 sst_copy.SortCodeType = 'DanielX';
                 
 
@@ -291,6 +300,10 @@ end
 
 function [] = move_old_files(fig_dir, sst_dir, iter_count)
 % Moves old files in Figures and SST_obj directories to 'old' directory in both.
+% ITER_COUNT is the number of times the sort has been called on the same
+% data.
+%
+% Note the first time this function is called, ITER_COUNT is one (1).
     
     old_fig = fullfile(fig_dir, 'old');
     old_sst = fullfile(sst_dir, 'old');
@@ -314,8 +327,8 @@ function [] = move_old_files(fig_dir, sst_dir, iter_count)
 
     meta_loc = fullfile(fig_dir, 'metadata.mat');
     
-    if iter_count > 0
-        meta_new_name = sprintf('metadata_%d.mat', iter_count);
+    if iter_count - 1 > 0
+        meta_new_name = sprintf('metadata_%d.mat', iter_count - 1);
         movefile(meta_loc, fullfile(old_fig, meta_new_name));
     else
         movefile(meta_loc, old_fig);
