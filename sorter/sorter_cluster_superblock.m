@@ -223,9 +223,14 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
                 % indices of matching parts -- inverse are rows to remove
                 part_match_idx = ismember(val_blk.find, parts);
                 
-                sst.Epocs.Values(~part_match_idx, :) = [];
-                sst.Epocs.TSOn(~part_match_idx, :) = [];
-                sst.Epocs.TSOff(~part_match_idx, :) = [];
+                % get indices of rows corresponding to current block.
+                row_idx = find(epoc_blk_idx);
+
+                non_part_idx = row_idx(~part_match_idx);
+                
+                sst.Epocs.Values(non_part_idx, :) = [];
+                sst.Epocs.TSOn(non_part_idx, :) = [];
+                sst.Epocs.TSOff(non_part_idx, :) = [];
                 
                 clear val_blk epoc_blk_idx
                 clear block_rows block_tbl
