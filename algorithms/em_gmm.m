@@ -17,7 +17,9 @@ function class = em_gmm(data, k)
 %
 % See also EMGM
     
-    [class, ~, ~] = emgm(data', k);
+    [class, ~, ~] = emgm(data.', k);
+    
+    class = class.';
 
 end
 
