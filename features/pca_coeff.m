@@ -9,6 +9,9 @@ function [coefficients] = pca_coeff(cutoff, max_coeff, varargin)
 % least CUTOFF variance of the data. The number of coefficients actually
 % returned will be at most MAX_COEFF.
 %
+% Note the minimum number of coefficients returned is 3, for ease of use
+% with feature space plotter functions.
+%
 % INPUT:
 % CUTOFF        Postive number between 0 and 1 for the desired variance
 % MAX_COEFF     Positive integer of maximum number of score coefficients desired
@@ -21,5 +24,10 @@ function [coefficients] = pca_coeff(cutoff, max_coeff, varargin)
     pca_info = pca_apply(varargin{1:end});
     nCoeff = pca_limit(pca_info.latent, cutoff, max_coeff);
 %     fprintf('number of coefficients selected: %d\n', nCoeff);
+
+    if nCoeff < 3
+        nCoeff = 3;
+    end
+
     coefficients = pca_info.score(:, 1:nCoeff);
 end
