@@ -1,52 +1,32 @@
-function [snip, epoc] = sorter_load_snip_block(path, block, root, sav)
+function [snip, epoc] = sorter_load_snip_block(path, block, data_dir, sav)
 % SORTER_LOAD_SNIP_BLOCK Load block data into workspace.
 %
-% [SNIP, EPOC] = SORTER_LOAD_SNIP_BLOCK(PATH, BLOCK, ROOT)
-%                Load block and save data to mat file.
+%   [SNIP, EPOC] = SORTER_LOAD_SNIP_BLOCK(PATH, BLOCK, DATA_DIR) Load block
+%   struct and save it to a mat file.            
 %
-% [SNIP, EPOC] = SORTER_LOAD_SNIP_BLOCK(PATH, BLOCK, ROOT, SAV)
-%                Load block but don't save data.
+%   [SNIP, EPOC] = SORTER_LOAD_SNIP_BLOCK(PATH, BLOCK, DATA_DIR, false) Load
+%   block data struct but don't save data.
 %
-% Requires TDT2mat.m
+%   Load snippet and epoch structs from a TDT tank (directory). The tank
+%   is located at the absolute path PATH. Only data in block number BLOCK is
+%   loaded.
 %
-% Load snippet struct from data in a TDT tank (directory). The tank
-% is located at the absolute path PATH. Only data in block number BLOCK is
-% loaded.
+%   If this is the first time the tank located at path PATH is loaded in this
+%   manner, the data struct containing the SNIP struct will be saved to
+%   a .mat file for convenient later access. This .mat file will be called
+%   <TANK>-Block-<BLOCK>.mat. This is the default behavior. Otherwise, the SAV
+%   variable can be set to False if saving to .mat file is undesired.
 %
-% Most of the time, this function will be called by an initialization script.
-% Generally the script is a child of the project root directory ROOT,
-% which is an absolute path. Usually ROOT will be equivalent to `pwd`
+%   The name TANK is the name of the directory described by PATH. The file will
+%   be saved to the DATA_DIR directory.
 %
-% The structure of the file system is as follows:
-%
-%   ..
-%    |__ ROOT/
-%           |__ your_initialization_script.m
-%
-% If this is the first time the tank located at path PATH is loaded in this
-% manner, the data struct containing the SNIP struct will be saved to
-% a .mat file for convenient later access. This .mat file will be called
-% <TANK>-Block-<BLOCK>.mat. This is the default behavior. Otherwise, the SAV
-% variable can be set to False if saving to .mat file is undesired.
-%
-% The name TANK is the name of the directory described by PATH. The file will be
-% saved at the same level as ROOT.
-%
-% As an example, after this function is invoked on TANK, BLOCK for the first
-% time, the file system will look like:
-%
-%   ..
-%    |__ TANK-Block-BLOCK.mat
-%    |__ ROOT/
-%           |__ your_initialization_script.m
-%
-% If this is not the first time this function has been called on TANK and BLOCK,
-% simply loads the saved .mat file.
+%   If this is not the first time this function has been called on TANK and
+%   BLOCK, simply loads the saved .mat file if it exists in DATA_DIR.
 %
 % INPUT:
-% PATH      String of the absolute path to the tank directory
-% BLOCK     Positive integer of the desired block
-% ROOT      String of the absolute path of the project.
+% PATH      String of the absolute path to the tank directory.
+% BLOCK     Positive integer of the desired block.
+% DATA_DIR  String of the absolute path of the project.
 % SAV       (optional) Set to false to not save to .mat file. Default: true
 %
 % OUTPUT:
@@ -60,8 +40,10 @@ function [snip, epoc] = sorter_load_snip_block(path, block, root, sav)
         error('Invalid block: %d', block);
     elseif isempty(path)
         error('Empty tank path');
-    elseif isempty(root)
-        error('Empty root path');
+    elseif isempty(data_dir)
+        error('Empty data directory path');
+    elseif ~exist(data_dir, 'dir')
+        error('Data directory does not exist');
     elseif ~exist('TDT2mat', 'file')
         error('TDT2mat required');
     elseif ~exist(path, 'dir')
@@ -70,14 +52,13 @@ function [snip, epoc] = sorter_load_snip_block(path, block, root, sav)
     
     SetDefaultValue(4, 'sav', true);
 
-    parent = fileparts(root);
-    data = load_block(path, block, parent, sav);
+    data = load_block(path, block, data_dir, sav);
 
     snip = data.snips.CSPK;
     epoc = data.epocs;
 end
 
-function [data] = load_block(tank_path, block, parent, sav)
+function [data] = load_block(tank_path, block, loc, sav)
 % Helper function. Returns the data struct from TDT2mat call to TANK and BLOCK.
 % If the BLOCK has been loaded before by a previous call to load_general, it
 % should have been saved to a file. In this case, this function simply loads
@@ -86,7 +67,7 @@ function [data] = load_block(tank_path, block, parent, sav)
     [~, tank_name, ~] = fileparts(tank_path);
 
     mat_name = sprintf('%s-Block-%d.mat', tank_name, block);
-    mat_path = fullfile(parent, mat_name);
+    mat_path = fullfile(loc, mat_name);
 
     if ~exist(mat_path, 'file')
 
