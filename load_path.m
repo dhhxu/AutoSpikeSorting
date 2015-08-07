@@ -30,9 +30,9 @@ function [] = load_path(root)
         addpath(genpath(codePath));
         
         % Superspiketrain scripts
-%         sst_path = fullfile('U:', '3shared' , 'Matlab Scripts', ...
-%                             'Superspiketrain');
-%         addpath(genpath(sst_path));
+        sst_path = fullfile('U:', '3shared' , 'Matlab Scripts', ...
+                            'Superspiketrain');
+        addpath(genpath(sst_path));
 
     catch
         error('\nPath load failed.');

@@ -22,7 +22,7 @@ function varargout = sorter_program(varargin)
 
 % Edit the above text to modify the response to help sorter_program
 
-% Last Modified by GUIDE v2.5 05-Aug-2015 17:36:23
+% Last Modified by GUIDE v2.5 07-Aug-2015 13:21:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -43,7 +43,6 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-
 % --- Executes just before sorter_program is made visible.
 function sorter_program_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -52,26 +51,61 @@ function sorter_program_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to sorter_program (see VARARGIN)
 
-handles.align_opt = 'none';
-handles.current_spikes = [];
-handles.original_spikes = [];
-handles.shift = 5;
+    % initialize path, load_path must be in same directory as this program.
+%     load_path(pwd);
 
-handles.is2d = true;
+    % User settings mat file name. Name should be constant.
+    handles.SETTINGS_FILENAME = 'sorter_settings.mat';
 
-handles.feature = @pca75;
-handles.algo = @sorter_kmeans;
+    % initialize variables
+    
+    if ~exist(handles.SETTINGS_FILENAME, 'file')
+        handles.feat_dir = uigetdir2('', 'Select feature directory');
+        handles.algo_dir = uigetdir2('', 'Select algorithm directory');
+        handles.data_dir = uigetdir2('', 'Select data export directory');
 
-handles.DATA_PATH = 'U:\DanielX\data';
+    else
+        % load settings
+        handles = load_settings(handles);
+    end
+    
+    display(handles.feat_dir);
+    display(handles.algo_dir);
+    display(handles.data_dir);
 
-% Choose default command line output for sorter_program
-handles.output = hObject;
+    
+    handles.tank = '';
+    handles.path = '';
+    handles.align_opt = 'none';
+    handles.current_spikes = [];
+    handles.original_spikes = [];
+    handles.shift = 5;
+    handles.superblocks = cell(0);
 
-% Update handles structure
-guidata(hObject, handles);
+    handles.is2d = true;
 
-% UIWAIT makes sorter_program wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+    % These two should be existing functions inside the project path.
+    handles.feature = @pca75;
+    handles.algo = @sorter_kmeans;
+
+    handles.k = 0;
+    
+    set(handles.feature_dim_group, 'selectedobject', handles.radiobutton3);
+
+    feature_str = sprintf('Feature: %s', func2str(handles.feature));
+    update_static_text_string(handles.feature_name, feature_str);
+
+    algo_str = sprintf('Algorithm: %s', func2str(handles.algo));
+    update_static_text_string(handles.algo_name, algo_str);
+
+    % Choose default command line output for sorter_program
+    handles.output = hObject;
+
+    % Update handles structure
+    guidata(hObject, handles);
+
+    % UIWAIT makes sorter_program wait for user response (see UIRESUME)
+    % uiwait(handles.sorter_program_figure);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -84,6 +118,48 @@ function varargout = sorter_program_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+% -----------------------------------------------------------------------------
+% Helpers
+% -----------------------------------------------------------------------------
+function [] = update_static_text_string(text_obj, new_str)
+% Update the string property of the static text object TEXTOBJ with string
+% NEW_STR
+
+    set(text_obj, 'string', new_str);
+    
+function [] = save_settings(handles)
+% Saves select fields of HANDLES to a settings struct. This struct is saved as
+% the value of handles.SETTINGS_FILENAME.
+
+    settings.feat_dir = handles.feat_dir;
+    settings.algo_dir = handles.algo_dir;
+    settings.data_dir = handles.data_dir;
+    
+    save(handles.SETTINGS_FILENAME, 'settings');
+
+    
+function [handles] = load_settings(handles)
+% Load the settings file located at handles.SETTINGS_FILE_PATH. The file is
+% assumed to exist. Then update fields in HANDLES with the corresponding saved
+% settings.
+
+    settings = load(handles.SETTINGS_FILENAME);
+    settings = settings.settings;
+    
+    handles.feat_dir = settings.feat_dir;
+    handles.algo_dir = settings.algo_dir;
+    handles.data_dir = settings.data_dir;
+    
+    
+function [] = plotspikes(handles)
+% Plot the spikes in the handle's current spikes
+
+    nSpikes = size(handles.current_spikes, 1);
+    hold on;
+    for i = 1:nSpikes
+        plot(handles.current_spikes(i, :));
+    end
+    hold off;
 
 
 % --- Executes on selection change in align_popup.
@@ -121,8 +197,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function num_unit_textbox_Callback(hObject, eventdata, handles)
 % hObject    handle to num_unit_textbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -137,8 +211,10 @@ function num_unit_textbox_Callback(hObject, eventdata, handles)
     
     if isnan(k_num) || ceil(k_num) ~= floor(k_num)
         errordlg('You must enter an interger', 'Invalid Input', 'modal');
+        return
     elseif k_num < 1
         errordlg('You must enter a positive integer', 'Invalid Input', 'modal');
+        return
     end
     
     handles.k = k_num;
@@ -165,8 +241,31 @@ function sort_button_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+    if isempty(handles.superblocks)
+        return
+    end
+
     feat = handles.feature;
     algo = handles.algo;
+    
+    tank_info.tank = handles.tank;
+    tank_info.path = handles.path;
+
+% Notes:
+% Need to add handles parameter to below function to update handle fields
+% like current_spikes
+% Below function would need to block to wait for user input.
+% The interactive parts in this function should be removed since the GUI
+% replaces the interactive functionality
+%
+% e.g. After superblocks created through open_tank user presses sort
+% button. The first press should bring up the first superblock/channel.
+% Then the  sorter_cluster_superblock should block somehow to wait for user
+% to align and determine # of units. The second press of sort would unblock
+%  sorter_cluster_superblock, and so on.
+%
+%     sorter_cluster_superblock(handles.superblocks, feat, algo, tank_info, ...
+%                               handles.data_dir);
     
 
 function max_shift_textbox_Callback(hObject, eventdata, handles)
@@ -183,8 +282,10 @@ function max_shift_textbox_Callback(hObject, eventdata, handles)
     
     if isnan(shift) || floor(shift) ~= ceil(shift)
         errordlg('You must enter an integer', 'Invalid Input', 'modal');
+        return
     elseif shift < 0
         errordlg('You must enter a positive integer', 'Invalid Input', 'modal');
+        return
     end
     
     handles.shift = shift;
@@ -211,31 +312,49 @@ function align_apply_button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
     if isempty(handles.original_spikes)
-        % popup
+        errordlg('No spikes loaded', 'Align Error', 'modal');
         return
     end
 
     opt = handles.align_opt;
-    guidata(hObject, handles);
     
     if strcmp(opt, 'none')
         handles.current_spikes = handles.original_spikes;
-    else        
-        aligned = align_snip(handles.original_spikes, handles.shift, opt);
+    else
+        aligned = align_snip(handles.current_spikes, handles.shift, opt);
         handles.current_spikes = aligned;
     end
+    
+    guidata(hObject, handles);
 
     % plot
     
     axes(handles.spike_axes);
-    
-    nSpikes = size(handles.current_spikes, 1);
-    hold on;
-    for i = 1:nSpikes
-        plot(handles.current_spikes(i, :));
-    end
-    hold off;
+    plotspikes(handles);
 
+% --------------------------------------------------------------------
+function menu_tank_open_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_tank_open (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    [tank, path] = sorter_get_tank('U:/');
+
+    if isempty(tank) || isempty(path)
+        return;
+    end
+
+    handles.tank = tank;
+    handles.path = path;
+    
+    guidata(hObject, handles);
+
+    % make superblocks
+    tic
+    [superblocks, ~, ~] = build_rfblock(handles.path, handles.data_dir);
+    toc
+    
+    handles.superblocks = superblocks;
+    guidata(hObject, handles);
     
 % --------------------------------------------------------------------
 function file_menu_Callback(hObject, eventdata, handles)
@@ -243,6 +362,46 @@ function file_menu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+% --------------------------------------------------------------------
+function exit_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to exit_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    
+    % save state to settings file
+    if exist(handles.SETTINGS_FILENAME, 'file')
+        delete(handles.SETTINGS_FILENAME);
+    end
+    
+    save_settings(handles);
+    
+    closereq
+
+    
+% --------------------------------------------------------------------
+function algo_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to algo_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% --------------------------------------------------------------------
+function algorithm_select_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to algorithm_select_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    
+    algo_handle = sorter_get_algorithm(handles.algo_dir);
+
+    if isempty(algo_handle)
+        return
+    end
+    
+    handles.algo = algo_handle;
+    
+    algo_str = sprintf('Algorithm: %s', func2str(handles.algo));
+    update_static_text_string(handles.algo_name, algo_str);
+    
+    guidata(hObject, handles);
 
 % --------------------------------------------------------------------
 function feature_menu_Callback(hObject, eventdata, handles)
@@ -250,66 +409,24 @@ function feature_menu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --------------------------------------------------------------------
-function algo_menu_Callback(hObject, eventdata, handles)
-% hObject    handle to algo_menu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function menu_tank_open_Callback(hObject, eventdata, handles)
-% hObject    handle to menu_tank_open (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    [TANK, PATH] = sorter_get_tank();
-
-    if isempty(TANK) || isempty(PATH)
-        return;
-    end
-
-    handles.tank = TANK;
-    handles.path = PATH;
-    
-    guidata(hObject, handles);
-
-% --------------------------------------------------------------------
-function export_menu_Callback(hObject, eventdata, handles)
-% hObject    handle to export_menu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-    DATA_PATH = sorter_get_dir(handles.DATA_PATH);
-    
-    if isempty(DATA_PATH)
-        return
-    end
-    
-    handles.DATA_PATH = DATA_PATH;
-    guidata(hObject, handles);    
-
-% --------------------------------------------------------------------
-function exit_menu_Callback(hObject, eventdata, handles)
-% hObject    handle to exit_menu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-    
-    closereq;
-
-% --------------------------------------------------------------------
-function algorithm_menu_select_Callback(hObject, eventdata, handles)
-% hObject    handle to algorithm_menu_select (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 % --------------------------------------------------------------------
 function feature_select_menu_Callback(hObject, eventdata, handles)
 % hObject    handle to feature_select_menu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+    feat_handle = sorter_get_feature(handles.feat_dir);
+
+    if isempty(feat_handle)
+        return
+    end
+    
+    handles.feature = feat_handle;
+    
+    feature_str = sprintf('Feature: %s', func2str(handles.feature));
+    update_static_text_string(handles.feature_name, feature_str);
+    
+    guidata(hObject, handles);
 
 % --- Executes when selected object is changed in feature_dim_group.
 function feature_dim_group_SelectionChangedFcn(hObject, eventdata, handles)
@@ -320,20 +437,23 @@ function feature_dim_group_SelectionChangedFcn(hObject, eventdata, handles)
     switch get(eventdata.NewValue, 'Tag')
         case 'radiobutton3'
             handles.is2d = true;
+            set(handles.feature_name, 'String', '2d');
         case 'radiobutton4'
             handles.is2d = false;
+            set(handles.feature_name, 'String', '3d');
     end
-    
-    guidata(hObject, handles);
-    
+
     if isempty(handles.current_spikes)
         return
     end
     
+    guidata(hObject, handles);
+    
     fs = handles.feature(handles.current_spikes);
     
     if size(fs, 2) < 3
-        % error
+        errordlg('Too few feature dimensions', 'Feature Error', 'modal');
+        return
     end
     
     fs = fs(:, 1:3);
@@ -343,5 +463,73 @@ function feature_dim_group_SelectionChangedFcn(hObject, eventdata, handles)
     else
         scatter3(fs(:, 1), fs(:, 2), fs(:, 3), 0.9);
     end
+
     
+% --------------------------------------------------------------------
+function path_settings_Callback(hObject, eventdata, handles)
+% hObject    handle to path_settings_Callback (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function set_feat_dir_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to set_feat_dir_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
     
+    feat_dir = uigetdir2('', 'Select features directory');
+
+    if isempty(feat_dir)
+        return
+    end
+    
+    handles.feat_dir = feat_dir;
+    guidata(hObject, handles);
+
+% --------------------------------------------------------------------
+function set_algo_dir_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to set_algo_dir_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    algo_path = uigetdir2('', 'Select algorithm directory');
+
+    if isempty(algo_path)
+        return
+    end
+    
+    handles.algo_dir = algo_path;
+    guidata(hObject, handles);
+    
+% --------------------------------------------------------------------
+function set_data_dir_menu_Callback(hObject, eventdata, handles)
+% hObject    handle to set_data_dir_menu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+    data_dir = uigetdir2(handles.data_dir, 'Select data output directory');
+
+    if isempty(data_dir)
+        return
+    end
+    
+    handles.data_dir = data_dir;
+    guidata(hObject, handles);
+
+% --- Executes when user attempts to close sorter_program_figure.
+function sorter_program_figure_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to sorter_program_figure (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+
+    % save state to settings file
+    if exist(handles.SETTINGS_FILENAME, 'file')
+        delete(handles.SETTINGS_FILENAME);
+    end
+    
+    save_settings(handles);
+
+    delete(hObject);

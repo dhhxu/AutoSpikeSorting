@@ -148,8 +148,8 @@ function [] = sorter_cluster_superblock(superblocks, feature, algo, ...
         
         blocks = unique(sb.block);
         
-%         for ch = 1:nChannels
-        for ch = 1:1
+        for ch = 1:nChannels
+%         for ch = 1:1
             rows = sb.chan == ch;
             chan_tbl = sb(rows, :);
 

@@ -15,7 +15,8 @@ function [path] = uigetdir2(start_path, dialog_title)
 %   the current working directory.
 %
 % Prompt user for a directory with a directory open dialog. This is the same as
-% UIGETDIR, except the title of the dialog is customizable.
+% UIGETDIR, except the title of the dialog is customizable. If user cancels
+% the operation, returns empty string.
 %
 % INPUT:
 % START_PATH    (optional) String of path to the starting search directory. If

@@ -79,9 +79,10 @@ toc
 %% Cluster by channel, construct SST objects
 if isempty(superblocks)
     warning('No superblocks available');
+    return
 end
 
-sorter_cluster_superblock(superblocks(1), feat_handle, algo_handle, tank_info, ...
+sorter_cluster_superblock(superblocks, feat_handle, algo_handle, tank_info, ...
                           DATA_PATH);
 
 %%

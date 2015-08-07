@@ -22,11 +22,13 @@ function [tank, path] = sorter_get_tank(base_dir)
 % TANK          String of tank name.
 % PATH          String of absolute tank path.
 
+    SetDefaultValue(1, 'base_dir', '');
+
     path = uigetdir2(base_dir, 'Select tank to open');
     tank = '';
 
     if isempty(path)
-        warning('No path chosen');
+%         warning('No path chosen');
         path = '';
         return
     end
