@@ -43,10 +43,10 @@ end
 tank_info.tank = tank;
 tank_info.path = tank_path;
 
-clear tank path;
+clear tank tank_path;
 
 %% Get feature file
-[feat_handle] = sorter_get_feature('U:/DanielX');
+[feat_handle] = sorter_get_feature(fullfile(pwd, 'features'));
 
 if isempty(feat_handle)
     return
@@ -55,7 +55,7 @@ end
 pause(1);
 
 %% Get algorithm file
-[algo_handle] = sorter_get_algorithm('U:/DanielX');
+[algo_handle] = sorter_get_algorithm(fullfile(pwd, 'algorithms'));
 
 if isempty(algo_handle)
     return
@@ -77,7 +77,11 @@ tic
 toc
 
 %% Cluster by channel, construct SST objects
-sorter_cluster_superblock(superblocks, feat_handle, algo_handle, tank_info, ...
+if isempty(superblocks)
+    warning('No superblocks available');
+end
+
+sorter_cluster_superblock(superblocks(1), feat_handle, algo_handle, tank_info, ...
                           DATA_PATH);
 
 %%
